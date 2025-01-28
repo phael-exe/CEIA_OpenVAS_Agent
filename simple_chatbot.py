@@ -20,3 +20,22 @@ api_key = os.getenv("OPENAI_API_KEY")
     print("OpenAI API key loaded successfully.")
 else:
     print("Error: OpenAI API key is not loaded.")"""
+    
+llm = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0.5,
+    max_completion_tokens=None,
+    streaming=True
+    timeout=None,
+    api_key=api_key,
+)
+
+class State(TypedDict):
+    
+    messages: Annotated[list, add_messages]
+    
+graph_builder = StateGraph(State)
+
+def chatbot(state: State):
+    return {"messages": [llm.invoke(state["messages"])]}
+
