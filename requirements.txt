@@ -4,3 +4,6 @@ gvm-tools
 langsmith
 langgraph
 python-dotenv
+graphviz
+pillow
+ipython
