@@ -25,10 +25,11 @@ llm = ChatOpenAI(
     model="gpt-4o-mini",
     temperature=0.5,
     max_completion_tokens=None,
-    streaming=True
+    streaming=True,
     timeout=None,
     api_key=api_key,
-)
+    )
+
 
 class State(TypedDict):
     
@@ -38,4 +39,11 @@ graph_builder = StateGraph(State)
 
 def chatbot(state: State):
     return {"messages": [llm.invoke(state["messages"])]}
+
+graph_builder.add_node("chatbot", chatbot)
+
+graph_builder.add_edge(START, "chatbot")
+
+graph_builder.add_edge("chatbot", END)
+
 
