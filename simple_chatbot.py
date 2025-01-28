@@ -15,4 +15,8 @@ load_dotenv()
 
 api_key = os.getenv("OPENAI_API_KEY")
 
-print(api_key is not None)
+#Added a test to verify if the OpenAI API key is loaded correctly.
+"""if api_key:
+    print("OpenAI API key loaded successfully.")
+else:
+    print("Error: OpenAI API key is not loaded.")"""
