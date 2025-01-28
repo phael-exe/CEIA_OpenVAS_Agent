@@ -16,3 +16,4 @@ Install the necessary dependencies, use a virtual environment for this, and then
 
 Developer Interface for Greenbone Vulnerability Management(OpenVAS) API: https://greenbone.github.io/python-gvm/api/api.html
 
+Make an .env file to storage sensible informations of your code, like OpenVAS user, password, OPENAI api key
