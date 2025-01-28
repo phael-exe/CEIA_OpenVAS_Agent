@@ -1,0 +1,6 @@
+langchain-openai
+langchain-community
+gvm-tools
+langsmith
+langgraph
+python-dotenv

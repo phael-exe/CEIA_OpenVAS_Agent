@@ -6,3 +6,11 @@ This repository have a goal of make a plan for integration of an AI with the Ope
 
 ## **Requirements**
 
+Install the necessary dependencies, use a virtual environment for this, and then install the dependencies in your virtual environment
+
+ ```bash
+   python3 -m .venv venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
