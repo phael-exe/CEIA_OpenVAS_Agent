@@ -7,3 +7,4 @@ python-dotenv
 graphviz
 pillow
 ipython
+tavily-python
