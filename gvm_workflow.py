@@ -99,6 +99,14 @@ class TaskManager:
         config_id = self.config_manager.get_config_id(gmp)
         scanner_id = self.scanner_manager.get_scanner_id(gmp)
         return self.task_creator.create_task(gmp, task_name, config_id, target_id, scanner_id)
+    
+class ReportManager:
+    def __init__(self):
+        pass 
+    
+    def get_report():
+        pass
+
 
 class GVMWorkflow:
     def __init__(self):
