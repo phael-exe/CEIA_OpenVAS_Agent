@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from gvm_workflow import GVMWorkflow
+from gvm_results import ResultManager
 
 
 from langchain_openai import ChatOpenAI
@@ -12,6 +13,8 @@ from langchain.agents import AgentExecutor, create_openai_tools_agent
 load_dotenv()
 
 api_key = os.getenv("OPENAI_API_KEY")
+
+query = input("User: ")
 
 def get_response_from_openai(message):
 
@@ -28,7 +31,33 @@ def get_response_from_openai(message):
     return response
 
 @tool
-def create_OpenVAS_task(question: str):
+def get_OpenVAS_results(question: str):
+    """
+    This tool assists in interpreting an OpenVAS scan result. It helps automate the analysis and understanding 
+    of the vulnerability data extracted from the OpenVAS scan results in the string
+    """
+   
+    context =  ResultManager.result()
+   
+    messages = [
+        SystemMessage(content="""You are a cybersecurity assistant specializing in network scanning 
+                      and penetration testing. With expert knowledge of OpenVAS, a powerful vulnerability 
+                      scanning tool, your role is to interpret everything that comes within the string of 
+                      an XML result converted from an OpenVAS scan. Do not skip any detail—automatically 
+                      analyze and extract all relevant vulnerability data from the string, ensuring nothing 
+                      is overlooked. Your task is to ensure that every piece of information within the OpenVAS 
+                      scan result is processed thoroughly and accurately, providing users with complete insights into the scans
+                      findings. Be emphatic in your approach, making sure no important data is missed, and offering precise 
+                      analysis for effective vulnerability assessment. You have to hide the response of result_str"""),
+        HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using{question}")
+    ]
+    
+    response = get_response_from_openai(messages)
+    
+    return response
+
+@tool
+def create_OpenVAS_tasks(question: str):
     """
     This tool helps create tasks in OpenVAS, a vulnerability scanning tool.
     It will assist in automating task creation for network scans and pentesting tasks within OpenVAS.
@@ -53,7 +82,7 @@ def create_OpenVAS_task(question: str):
     
     return response
 
-toolkit = [create_OpenVAS_task]
+toolkit = [create_OpenVAS_tasks, get_OpenVAS_results]
 
 llm = ChatOpenAI(
         model = "gpt-4o-mini",
@@ -69,7 +98,7 @@ prompt = ChatPromptTemplate.from_messages(
         ("system", """
                         You are a cybersecurity assistant specialized in network scanning and penetration testing. 
                         You are an expert in using OpenVAS. Use your tools to answer questions.
-                        If you don't have a tool to answer the question, say no.
+                        Please generate a response organized in bullet points, with headings and lists to make it easier to read.
                         
                         Return only a message with the task created.
          """),
@@ -84,6 +113,6 @@ agent = create_openai_tools_agent(llm, toolkit, prompt)
 
 agent_executor = AgentExecutor(agent=agent, tools=toolkit, verbose=True)
 
-result = agent_executor.invoke({"input":"Create a task in OpenVAS to scan a specific target."})
+result = agent_executor.invoke({"input":f"{query}"})
 
 print(result["output"])
