@@ -1,4 +1,4 @@
-# openvas_agent
+# OPENVAS AGENT
 
 This repository have a goal of make a plan for integration of an AI with the OpenVAS API, aiming to eventually develop a copilot capable of assisting users in vulnerability analysis and result interpretation. The idea is that the tool could automate tasks such as prioritizing alerts, suggesting remediations based on best practices, and providing detailed explanations. This planning will consider challenges such as secure authentication, user-friendly response formatting, and the possibility of customizing the experience for specific user scenarios.
 
@@ -17,6 +17,24 @@ Install the necessary dependencies, use a virtual environment for this, and then
 Developer Interface for Greenbone Vulnerability Management(OpenVAS) API: https://greenbone.github.io/python-gvm/api/api.html
 
 Make an .env file to storage sensible informations of your code, like OpenVAS user, password, OPENAI api key
+
+---
+
+## **Requests**
+
+To acess gvmd.sock to made an UnixSocketConnection to make requests for GVM API, try:
+
+```bash
+   sudo chmod 660 /var/run/gvmd/gvmd.sock
+   ```
+
+If doesn't work, try:
+
+```bash
+   sudo chmod 777 /var/run/gvmd.sock
+   ```
+
+---
 
 To run this:
 

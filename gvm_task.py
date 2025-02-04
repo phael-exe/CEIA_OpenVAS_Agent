@@ -15,6 +15,8 @@ port_list_name = os.getenv('GVMD_PORT_LIST_NAME', 'All IANA assigned TCP and UDP
 connection = UnixSocketConnection(path=path)
 transform = EtreeCheckCommandTransform()
 
+print(password is not None)
+
 task_name = input("Digite um nome de task para o scan: ")
 # Criar uma instância do GMP e iniciar uma sessão
 with GMP(connection=connection, transform=transform) as gmp:
