@@ -62,9 +62,9 @@ def create_OpenVAS_tasks(question: str):
     This tool helps create tasks in OpenVAS, a vulnerability scanning tool.
     It will assist in automating task creation for network scans and pentesting tasks within OpenVAS.
     """
-    workflow = GVMWorkflow()
+
     
-    context =  workflow.run()
+    context =  GVMWorkflow.run()
    
     messages = [
         SystemMessage(content="""You are a cybersecurity assistant specialized in network scanning and penetration testing. 

@@ -23,17 +23,6 @@ class AuthenticationManager:
         """Autentica o usuário usando o GMP."""
         gmp.authenticate(self.username, self.password)
 
-class PortListManager:
-    def __init__(self, port_list_name):
-        self.port_list_name = port_list_name
-
-    def get_port_list_id(self, gmp):
-        """Obtém o ID da lista de portas pelo nome."""
-        port_lists = gmp.get_port_lists()
-        for port_list in port_lists.findall('port_list'):
-            if port_list.findtext('name') == self.port_list_name:
-                return port_list.get('id')
-        raise Exception(f"Port list '{self.port_list_name}' not found.")
 
 class TargetManager:
     def __init__(self, host, port_list_manager):
@@ -115,7 +104,6 @@ class GVMWorkflow:
         self.auth_manager = AuthenticationManager(
             os.getenv('GVMD_USERNAME'), os.getenv('GVMD_PASSWORD')
         )
-        self.port_list_manager = PortListManager(os.getenv('GVMD_PORT_LIST_NAME', 'All IANA assigned TCP and UDP'))
         self.target_manager = TargetManager(os.getenv('GVMD_HOST'), self.port_list_manager)
         self.config_manager = ConfigManager()
         self.scanner_manager = ScannerManager()
