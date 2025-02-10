@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 # Obtém o caminho para o socket a partir da variável de ambiente
-path = '/var/run/gvmd/gvmd.sock'
+path = '/run/gvmd/gvmd.sock'
 
 print(path is not None)
 

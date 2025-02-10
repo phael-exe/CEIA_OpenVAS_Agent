@@ -10,7 +10,7 @@ path = os.getenv('GVMD_SOCKET_PATH')
 username = os.getenv('GVMD_USERNAME')
 password = os.getenv('GVMD_PASSWORD')
 host = os.getenv('GVMD_HOST')
-port_list_name = os.getenv('GVMD_PORT_LIST_NAME', 'All IANA assigned TCP and UDP')  # Nome da lista de portas desejada
+port_list_name = os.getenv('GVMD_PORT_LIST_NAME')  # Nome da lista de portas desejada
 # Estabelecer conexão com o Unix Socket
 connection = UnixSocketConnection(path=path)
 transform = EtreeCheckCommandTransform()
