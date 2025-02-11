@@ -124,13 +124,13 @@ class GVMWorkflow:
         with self.connection_manager.connect() as gmp:
             try:
                 self.auth_manager.authenticate(gmp)
-                task_name = input("Enter a task name for the scan.: ")
+                task_name = input("Enter a task name for the scan: ")
                 task = self.task_manager.prepare_task(gmp, task_name)
                 print("Task criada com sucesso:", task)
 
                 start_response = self.task_starter.start_task(gmp, task_name)
-                print("Task started successfully.:", start_response)
-                print("Running task. ...")
+                print("Task started successfully:", start_response)
+                print("Running task...")
             except Exception as e:
                 print(f"Error: {e}")
 

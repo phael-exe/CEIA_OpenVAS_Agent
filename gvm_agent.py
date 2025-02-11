@@ -67,7 +67,9 @@ def get_OpenVAS_results(question: str):
                         References: [List of relevant references, such as CVEs, links to official documentation, or bug tracking tickets]
 
                         Ensure responses are concise, technical, and consistently formatted. After following the vulnerability reporting template, provide additional suggestions for solutions 
-                        and routines to enhance system security. These suggestions can include security best practices, configuration changes, regular updates, and proactive monitoring routines to ensure the overall safety and resilience of the system."""),
+                        and routines to enhance system security. These suggestions can include security best practices, configuration changes, regular updates, and proactive monitoring routines 
+                        to ensure the overall safety and resilience of the system. Ensure that all detected vulnerabilities are processed and reported. No vulnerability should be left unaddressed. 
+                        If any vulnerability is missed, trigger a re-evaluation or notify the user."""),
         HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using{question}")
     ]
     

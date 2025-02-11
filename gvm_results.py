@@ -28,7 +28,7 @@ class ResultManager:
 
             
                 task_id = None
-                task_name_part = input('Type a word or the task name.: ') # Substitua por uma palavra ou parte do nome da tarefa
+                task_name_part = input('Type a word or the task name: ') # Substitua por uma palavra ou parte do nome da tarefa
         
                 # Verifica todas as tarefas e busca a que contém o nome desejado
                 for task in tasks.findall('task'):
@@ -40,7 +40,7 @@ class ResultManager:
                     
         
                 if not task_id:
-                    raise Exception(f"Nenhuma tarefa encontrada com a palavra '{task_name_part}' no nome.")
+                    raise Exception(f"No task found with the word '{task_name_part}' in the name.")
         
                 results = gmp.get_results(task_id=task_id, filter_id='5ff29513-7ffb-460d-988c-536754c3a07a')
         
