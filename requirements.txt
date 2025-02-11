@@ -8,3 +8,4 @@ graphviz
 pillow
 ipython
 tavily-python
+pandas

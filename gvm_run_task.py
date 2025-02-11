@@ -1,5 +1,4 @@
 import os
-import re
 from gvm.connections import UnixSocketConnection
 from gvm.protocols.gmp import GMP
 from gvm.transforms import EtreeCheckCommandTransform

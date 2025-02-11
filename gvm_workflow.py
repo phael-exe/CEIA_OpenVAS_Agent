@@ -25,24 +25,26 @@ class AuthenticationManager:
 
 
 class TargetManager:
-    def __init__(self, host, port_list_manager):
-        self.host = host
-        self.port_list_manager = port_list_manager
 
     def get_target_id(self, gmp):
-        """Verifica se o alvo já existe e retorna seu ID ou cria um novo."""
+        """Verifica se o alvo já existe e retorna seu ID """
         targets = gmp.get_targets()
+        
+        target_id = None
         for target in targets.findall('target'):
-            if target.findtext('name') == "My Target" or target.findtext('hosts') == self.host:
-                return target.get('id')
-        port_list_id = self.port_list_manager.get_port_list_id(gmp)
-        target = gmp.create_target(
-            name="My Target",
-            hosts=[self.host],
-            comment="My Target",
-            port_list_id=port_list_id,
-        )
-        return target.get("id")
+            target_name = target.findtext('name')
+            target_id = target.get('id')
+            #print(f"Alvo encontrado -> Nome: {target_name}, ID: {target_id}")
+
+            if target_name == "ALVO TESTE":
+                target_id = target_id
+                #print(f"Alvo correto identificado: {target_id}")
+                break
+
+            if not target_id:
+                raise Exception("Alvo 'ALVO TESTE' não encontrado!")
+            
+        return target_id
 
 class ConfigManager:
     def get_config_id(self, gmp):
@@ -89,13 +91,17 @@ class TaskManager:
         scanner_id = self.scanner_manager.get_scanner_id(gmp)
         return self.task_creator.create_task(gmp, task_name, config_id, target_id, scanner_id)
     
-class ReportManager:
-    def __init__(self):
-        pass 
-    
-    def get_report():
-        pass
-
+class TaskStarter:
+    def start_task(self, gmp, task_name):
+        """Inicia uma tarefa existente pelo nome."""
+        tasks = gmp.get_tasks()
+        
+        for task in tasks.findall('task'):
+            if task.findtext('name') == task_name:
+                task_id = task.get('id')
+                return gmp.start_task(task_id=task_id)
+        
+        raise Exception(f"Tarefa '{task_name}' não encontrada!")
 
 class GVMWorkflow:
     def __init__(self):
@@ -104,23 +110,29 @@ class GVMWorkflow:
         self.auth_manager = AuthenticationManager(
             os.getenv('GVMD_USERNAME'), os.getenv('GVMD_PASSWORD')
         )
-        self.target_manager = TargetManager(os.getenv('GVMD_HOST'), self.port_list_manager)
+        self.target_manager = TargetManager()
         self.config_manager = ConfigManager()
         self.scanner_manager = ScannerManager()
         self.task_creator = TaskCreator()
         self.task_manager = TaskManager(
             self.target_manager, self.config_manager, self.scanner_manager, self.task_creator
         )
+        self.task_starter = TaskStarter()
 
     def run(self):
         """Executa o fluxo completo."""
         with self.connection_manager.connect() as gmp:
             try:
                 self.auth_manager.authenticate(gmp)
-                task = self.task_manager.prepare_task(gmp, task_name=input("Digite um nome de task para o scan: "))
-                print("Tarefa criada com sucesso:", task)
+                task_name = input("Enter a task name for the scan.: ")
+                task = self.task_manager.prepare_task(gmp, task_name)
+                print("Task criada com sucesso:", task)
+
+                start_response = self.task_starter.start_task(gmp, task_name)
+                print("Task started successfully.:", start_response)
+                print("Running task. ...")
             except Exception as e:
-                print(f"Erro: {e}")
+                print(f"Error: {e}")
 
 # Uso da classe
 if __name__ == "__main__":
