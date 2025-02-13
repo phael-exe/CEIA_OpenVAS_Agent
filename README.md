@@ -6,8 +6,16 @@ This repository have a goal of make a plan for integration of an AI with the Ope
 
 ## **OpenVAS Instalation**
 
-OpenVAS Install Guide: https://dev.iachieved.it/iachievedit/installing-greenbone-openvas-on-ubuntu-24-04/ 
+![Greenbone Logo](https://www.greenbone.net/wp-content/uploads/gb_new-logo_horizontal_rgb_small.png)
 
+OpenVAS Install Guide: https://dev.iachieved.it/iachievedit/installing-greenbone-openvas-on-ubuntu-24-04/ (Ubuntu 24.04)
+OpenVAS GitHub: https://github.com/greenbone/openvas-scanner 
+
+For Kali Linux: 
+
+```bash
+   sudo apt install gvm
+   ```
 ---
 
 ## **Requirements**
