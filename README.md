@@ -4,6 +4,12 @@ This repository have a goal of make a plan for integration of an AI with the Ope
 
 ---
 
+## **OpenVAS Instalation**
+
+OpenVAS Install Guide: https://dev.iachieved.it/iachievedit/installing-greenbone-openvas-on-ubuntu-24-04/ 
+
+---
+
 ## **Requirements**
 
 Install the necessary dependencies, use a virtual environment for this, and then install the dependencies in your virtual environment
