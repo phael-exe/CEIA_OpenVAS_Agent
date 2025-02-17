@@ -9,3 +9,12 @@ pillow
 ipython
 tavily-python
 pandas
+langchain_experimental
+httpx
+bs4
+duckduckgo_search
+langgraph-checkpoint-sqlite
+langgraph-checkpoint-sqlite
+langchain-chroma 
+pypdf 
+sentence-transformers
