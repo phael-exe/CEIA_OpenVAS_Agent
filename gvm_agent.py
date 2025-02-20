@@ -2,8 +2,8 @@ import os
 import webbrowser
 
 from dotenv import load_dotenv
-from tools.gvm_workflow import GVMWorkflow
-from tools.gvm_results import ResultManager
+from src.tools.gvm_workflow import GVMWorkflow
+from src.tools.gvm_results import ResultManager
 
 
 from langchain_openai import ChatOpenAI

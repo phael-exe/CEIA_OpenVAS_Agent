@@ -13,5 +13,5 @@ def get_response_from_openai(message):
     return response
 
 #TESTE
-response = get_response_from_openai(query)
-print("Assistant:", response.content)
+"""response = get_response_from_openai(query)
+print("Assistant:", response.content)"""
