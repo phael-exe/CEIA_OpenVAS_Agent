@@ -1,20 +1,38 @@
 import os
 import webbrowser
 
+
+from typing import Annotated, Literal
+from typing_extensions import TypedDict
+
 from dotenv import load_dotenv
 from tools.gvm_workflow import GVMWorkflow
 from tools.gvm_results import ResultManager
 
+from langgraph.graph import MessagesState, END, StateGraph, START
+from langgraph.types import Command
+from langgraph.prebuilt import create_react_agent
+from langchain_core.runnables.graph_mermaid import draw_mermaid_png
 
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain.tools import tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.agents import AgentExecutor, create_openai_tools_agent
+
 
 load_dotenv()
 
 api_key = os.getenv("OPENAI_API_KEY")
+
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(
+        model = "gpt-4o-mini",
+        temperature=0.1,
+        max_completion_tokens=None,
+        timeout=None,
+        api_key=api_key,
+        )
 
 query = input("User: ")
 
@@ -80,18 +98,6 @@ def get_OpenVAS_results(question: str):
     return response
 
 @tool
-def open_browser(porta=9392):
-    """
-    This tool helps launch the GUI of OpenVAS, a vulnerability scanning tool.  
-    It will assist in automating the process of opening and accessing the OpenVAS 
-    graphical interface for managing scans and security assessments.  
-    """
-
-    url = f"http://127.0.0.1:{porta}/"
-    webbrowser.open(url)
-    print(f"Opening {url} in the browser...")
-
-@tool
 def create_OpenVAS_tasks(question: str):
     """
     This tool helps create tasks in OpenVAS, a vulnerability scanning tool.
@@ -117,37 +123,95 @@ def create_OpenVAS_tasks(question: str):
     
     return response
 
-toolkit = [create_OpenVAS_tasks, get_OpenVAS_results, open_browser]
+@tool
+def open_browser(porta=9392):
+    """
+    This tool helps launch the GUI of OpenVAS, a vulnerability scanning tool.  
+    It will assist in automating the process of opening and accessing the OpenVAS 
+    graphical interface for managing scans and security assessments.  
+    """
 
-llm = ChatOpenAI(
-        model = "gpt-4o-mini",
-        temperature=0.1,
-        max_completion_tokens=None,
-        timeout=None,
-        api_key=api_key,
-        )
+    url = f"http://127.0.0.1:{porta}/"
+    webbrowser.open(url)
+    print(f"Opening {url} in the browser...")
 
+members = ["tasker", "resulter"]
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", """
-                        You are a cybersecurity assistant specialized in network scanning and penetration testing. 
-                        You are an expert in using OpenVAS. Use your tools to answer questions.
-                        Please generate a response organized in bullet points, with headings and lists to make it easier to read.
+options = members + ["FINISH"]
 
-                        Return only a message with the task created. 
-         """),
-        MessagesPlaceholder("chat_history", optional=True),
-        ("human", "{input}"),
-        MessagesPlaceholder("agent_scratchpad"),
-        
-    ]
+system_prompt = (
+    "You are a supervisor tasked with managing a conversation between the"
+    f" following workers: {members}. Given the following user request,"
+    " respond with the worker to act next. Each worker will perform a"
+    " task and respond with their results and status. When finished,"
+    " respond with FINISH."
 )
 
-agent = create_openai_tools_agent(llm, toolkit, prompt)
+class Router(TypedDict):
 
-agent_executor = AgentExecutor(agent=agent, tools=toolkit, verbose=False)
+    next: Literal[*options]
 
-result = agent_executor.invoke({"input":f"{query}"})
 
-print(result["output"])
+class State(MessagesState):
+    
+    next: str
+
+def supervisor_node(state: State) -> Command[Literal[*members, "__end__"]]:
+    
+    messages = [
+        {"role": "system", "content": system_prompt},
+    ] + state["messages"]
+
+    response = llm.with_structured_output(Router).invoke(messages)
+    goto = response["next"]
+    if goto == "FINISH":
+        goto = END
+
+    return Command(goto=goto, update={"next": goto})
+
+task_agent = create_react_agent(llm, 
+                                tools=[create_OpenVAS_tasks, open_browser], 
+                                prompt="""You are an automation agent responsible for task creation 
+                                and workflow management in OpenVAS. Your goal is to optimize the execution 
+                                of scans, open the OpenVAS GUI in the browser, and ensure smooth task management.
+                                Strictly follow security and compliance protocols.""")
+
+def task_node(state: State) -> Command[Literal["supervisor"]]:
+    result = task_agent.invoke(state)
+    return Command(
+        update={
+            "messages": [
+                HumanMessage(content=result["messages"][-1].content, name="tasker")
+            ]
+        },
+        goto="supervisor"
+    )
+
+result_agent = create_react_agent(llm, tools=[get_OpenVAS_results],  prompt="USE YOUR TOOL, DO NOT OTHER THING")
+
+def result_node(state: State) -> Command[Literal["supervisor"]]:
+    result = result_agent.invoke(state)  # Invocando o agente para processar os resultados
+    return Command(
+        update={
+            "messages": [
+                HumanMessage(content=result["messages"][-1].content, name="resulter")  # Nome do agente de resultado
+            ]
+        },
+        goto="supervisor"  # Transição para o nó 'supervisor'
+    )
+
+builder = StateGraph(State)
+builder.set_entry_point("supervisor")
+
+# Adicionando os nós ao gráfico
+builder.add_node("supervisor", supervisor_node)
+builder.add_node("tasker", task_node)
+builder.add_node("resulter", result_node) 
+# Compilando o gráfico
+graph = builder.compile()
+
+for s in graph.stream(
+    {"messages": [("user", query)]}, subgraphs=True
+):
+    print(s)
+    print("----")
