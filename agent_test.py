@@ -18,11 +18,15 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain.tools import tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langgraph.types import interrupt
+from langgraph.checkpoint.memory import MemorySaver
 
 
 load_dotenv()
 
 api_key = os.getenv("OPENAI_API_KEY")
+
+from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(
         model = "gpt-4o-mini",
@@ -87,7 +91,8 @@ def get_OpenVAS_results(question: str):
                         Port: [Affected port number and protocol (e.g., 443/tcp)]
                         CVSS Base Score: [Severity score based on the CVSS scale, indicating if it is low, medium, high, or critical]
                         Description: [Brief technical explanation of the vulnerability, including its cause and potential impacts, such as remote code execution, XSS, SQL injection, etc.]
-                        Solution: [Recommended mitigation, such as updating software, applying patches, or configuring security settings]
+                        Solution: [Recommended mi    response = get_response_from_openai(messages)
+tigation, such as updating software, applying patches, or configuring security settings]
                         References: [List of relevant references, such as CVEs, links to official documentation, or bug tracking tickets]
 
                         Ensure responses are concise, technical, and consistently formatted. After following the vulnerability reporting template, provide additional suggestions for solutions 
@@ -139,9 +144,11 @@ def open_browser(porta=9392):
     webbrowser.open(url)
     print(f"Opening {url} in the browser...")
 
-members = ["tasker", "resulter"]
+members = ["tasker", "resulter", "human"]
 
 options = members + ["FINISH"]
+
+checkpointer = MemorySaver()
 
 system_prompt = (
     "You are a supervisor tasked with managing a conversation between the"
@@ -157,8 +164,20 @@ class Router(TypedDict):
 
 
 class State(MessagesState):
-    
+    summary: str
     next: str
+
+def human_editing(state: State):
+
+    result = interrupt(
+        
+        {
+            "task": "Review the output from the LLM and make any necessary edits.",
+            "llm_generated_summary": state["messages"][-1].content
+        }
+    )
+
+    return Command(update={"messages": HumanMessage(result["edited_text"]), "next": "supervisor"}, goto="supervisor")
 
 def supervisor_node(state: State) -> Command[Literal[*members, "__end__"]]:
     
@@ -237,17 +256,22 @@ tool_node = ToolNode(toolkit)
 builder = StateGraph(State)
 builder.set_entry_point("supervisor")
 
-# Adicionando os nós ao gráfico
 builder.add_node("supervisor", supervisor_node)
 builder.add_node("tasker", task_node)
 builder.add_node("resulter", result_node)
 builder.add_node("call_tool", tool_node)
+builder.add_node("human", human_editing)
+
 builder.add_conditional_edges("call_tool", lambda x: x["next"], {"resulter":"resulter", "tasker":"tasker"})
-# Compilando o gráfico
-graph = builder.compile()
+builder.add_edge("human", "supervisor")
+
+graph = builder.compile(checkpointer=checkpointer)
+
+thread_config = {"configurable": {"thread_id": "some_id"}}
 
 for s in graph.stream(
     {"messages": [("user", query)]}, subgraphs=True,
+    config=thread_config
 ):
-    print(s)
+    print(s) 
     print("----")
