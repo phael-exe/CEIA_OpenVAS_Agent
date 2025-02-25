@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from src.tools.gvm_workflow import GVMWorkflow
 from src.tools.gvm_results import ResultManager
 
-
+from langchain.memory import ConversationBufferMemory
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain.tools import tool
@@ -15,8 +15,6 @@ from langchain.agents import AgentExecutor, create_openai_tools_agent
 load_dotenv()
 
 api_key = os.getenv("OPENAI_API_KEY")
-
-query = input("User: ")
 
 def get_response_from_openai(message):
 
@@ -89,7 +87,7 @@ def open_browser(porta=9392):
 
     url = f"http://127.0.0.1:{porta}/"
     webbrowser.open(url)
-    print(f"Opening {url} in the browser...")
+    print(f"\nOpening {url} in the browser...\n")
 
 @tool
 def create_OpenVAS_tasks(question: str):
@@ -117,7 +115,28 @@ def create_OpenVAS_tasks(question: str):
     
     return response
 
-toolkit = [create_OpenVAS_tasks, get_OpenVAS_results, open_browser]
+@tool
+def cybersecurity_analist(question: str) -> str:
+    """
+    Receives a question about cybersecurity vulnerabilities and returns a detailed response.  
+    The response includes an explanation of the vulnerability and recommendations for mitigation.
+    """
+    
+    messages = [
+        SystemMessage(content="""You are a cybersecurity assistant specialized in vulnerability analysis and mitigation.
+                                    You are an expert in identifying, analyzing, and explaining cybersecurity vulnerabilities, and in providing actionable recommendations to mitigate them.
+                                    Your role is to answer questions about cybersecurity vulnerabilities, delivering clear, detailed explanations and practical mitigation strategies.
+                                    When given a question, analyze the vulnerability thoroughly and offer precise, step-by-step recommendations based on industry best practices.
+                                    """),
+        HumanMessage(content=f"Execute the following task: Answer the cybersecurity vulnerability question using the details provided: {question}")
+    ]   
+
+    response = get_response_from_openai(messages)
+
+    return response
+    
+
+toolkit = [create_OpenVAS_tasks, get_OpenVAS_results, open_browser, cybersecurity_analist]
 
 llm = ChatOpenAI(
         model = "gpt-4o-mini",
@@ -144,10 +163,18 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
+memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+
 agent = create_openai_tools_agent(llm, toolkit, prompt)
 
-agent_executor = AgentExecutor(agent=agent, tools=toolkit, verbose=False)
+agent_executor = AgentExecutor(agent=agent, tools=toolkit, memory=memory, verbose=True)
 
-result = agent_executor.invoke({"input":f"{query}"})
+while True:
+    query = input("\nUser: ")
 
-print(result["output"])
+    if query.lower() in ["q", "exit"]:
+        print("\nExiting chat...")
+        break
+
+    result = agent_executor.invoke({"input": query})
+    print(f"\n{result["output"]}\n")
