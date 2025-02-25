@@ -4,13 +4,13 @@ from gvm.protocols.gmp import GMP
 from gvm.transforms import EtreeCheckCommandTransform
 from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
-# Carregar variáveis de ambiente
+
 load_dotenv()
-# Obter os valores das variáveis de ambiente
+
 path = os.getenv('GVMD_SOCKET_PATH')
 username = os.getenv('GVMD_USERNAME')
 password = os.getenv('GVMD_PASSWORD')
-# Estabelecer conexão com o Unix Socket
+
 connection = UnixSocketConnection(path=path)
 transform = EtreeCheckCommandTransform()
 
@@ -21,44 +21,58 @@ class ResultManager:
     def result(self):
         with GMP(connection=connection, transform=transform) as gmp:
             try:
-                # Autentica no servidor
+
                 gmp.authenticate(username=username, password=password)
         
                 tasks = gmp.get_tasks()
 
             
                 task_id = None
-                task_name_part = input('Type a word or the task name: ') # Substitua por uma palavra ou parte do nome da tarefa
+                task_status = None
+                task_name = None
+                task_name_part = input('\nType a word or the task name: ').strip().lower()
         
                 # Verifica todas as tarefas e busca a que contém o nome desejado
                 for task in tasks.findall('task'):
-                    task_name = task.findtext('name')
-                    if task_name_part.lower() in task_name.lower():  # Verifica se a palavra está no nome da tarefa
-                        task_id = task.get('id')
-                        #print(f"Tarefa encontrada: {task_name} (ID: {task_id})")
-                        break
-                    
-        
+                    task_name_elem = task.find('name')
+                    status_elem = task.find('status')
+
+                    if task_name_elem is not None and status_elem is not None:
+                        task_name = task_name_elem.text
+                        task_status = status_elem.text
+
+                        if task_name and task_name_part in task_name.lower():
+                            task_id = task.get('id')
+                            break
+
                 if not task_id:
-                    raise Exception(f"No task found with the word '{task_name_part}' in the name.")
+                    raise ValueError(f"\nNo task found with the word '{task_name_part}'.")
+                
+                if task_status != "Done":
+                    print(f"\nIt is not possible to return the report yet, the task '{task_name}' is in status: {task_status}.\n")
+                    return None
         
                 results = gmp.get_results(task_id=task_id, filter_id='5ff29513-7ffb-460d-988c-536754c3a07a')
         
                 result_str = ET.tostring(results, encoding="unicode", method="xml")
                 #print(f"Resultados obtidos com sucesso: {result_str}")
-        
+                return result_str
+            
             except Exception as e:
                 print(f"Erro: {e}")
+                return None
             
-        return result_str
+        
                 
         
                 
 
 if __name__ == "__main__":
     sla = ResultManager()
-    sla.result()
-    
+    resultado = sla.result()
+    if resultado:
+        print(resultado)
+
 
 
 

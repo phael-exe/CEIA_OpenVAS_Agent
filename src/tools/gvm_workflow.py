@@ -42,7 +42,7 @@ class TargetManager:
                 break
 
             if not target_id:
-                raise Exception("Alvo 'ALVO TESTE' não encontrado!")
+                raise Exception("\nTarget 'ALVO TESTE' not found!")
             
         return target_id
 
@@ -53,7 +53,7 @@ class ConfigManager:
         for config in configs.findall('config'):
             if config.findtext('name') == 'Full and fast':
                 return config.get('id')
-        raise Exception("Scan configuration 'Full and fast' not found.")
+        raise Exception("\nScan configuration 'Full and fast' not found.")
 
 class ScannerManager:
     def get_scanner_id(self, gmp):
@@ -62,7 +62,7 @@ class ScannerManager:
         for scanner in scanners.findall('scanner'):
             if scanner.findtext('name') == 'OpenVAS Default':
                 return scanner.get('id')
-        raise Exception("Scanner 'OpenVAS Default' not found.")
+        raise Exception("\nScanner 'OpenVAS Default' not found.")
 
 class TaskCreator:
     def __init__(self):
@@ -101,7 +101,7 @@ class TaskStarter:
                 task_id = task.get('id')
                 return gmp.start_task(task_id=task_id)
         
-        raise Exception(f"Tarefa '{task_name}' não encontrada!")
+        raise Exception(f"\nTask '{task_name}' not found!")
 
 class GVMWorkflow:
     def __init__(self):
@@ -124,15 +124,15 @@ class GVMWorkflow:
         with self.connection_manager.connect() as gmp:
             try:
                 self.auth_manager.authenticate(gmp)
-                task_name = input("Enter a task name for the scan: ")
+                task_name = input("\nType a name for the task: ")
                 task = self.task_manager.prepare_task(gmp, task_name)
-                print("Task criada com sucesso:", task)
+                print("\nTask successfully created:", task)
 
                 start_response = self.task_starter.start_task(gmp, task_name)
-                print("Task started successfully:", start_response)
-                print("Running task...")
+                print("\nTask started successfully:", start_response)
+                print("\nRunning task...")
             except Exception as e:
-                print(f"Error: {e}")
+                print(f"\nError: {e}")
 
 # Uso da classe
 if __name__ == "__main__":
