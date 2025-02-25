@@ -69,7 +69,9 @@ def get_OpenVAS_results(question: str):
                         Ensure responses are concise, technical, and consistently formatted. After following the vulnerability reporting template, provide additional suggestions for solutions 
                         and routines to enhance system security. These suggestions can include security best practices, configuration changes, regular updates, and proactive monitoring routines 
                         to ensure the overall safety and resilience of the system. Ensure that all detected vulnerabilities are processed and reported. No vulnerability should be left unaddressed. 
-                        If any vulnerability is missed, trigger a re-evaluation or notify the user."""),
+                        If any vulnerability is missed, trigger a re-evaluation or notify the user.
+                      
+                        IMPORTANT: If the task is not completed (status is not 'Done'), DO NOT return any vulnerability report. Instead, just execute the tool and return the status of the task."""),
         HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using{question}")
     ]
     
@@ -118,7 +120,7 @@ def create_OpenVAS_tasks(question: str):
 @tool
 def cybersecurity_analist(question: str) -> str:
     """
-    Receives a question about cybersecurity vulnerabilities and returns a detailed response.  
+    Receives a question or a prompt about cybersecurity vulnerabilities and returns a detailed response.  
     The response includes an explanation of the vulnerability and recommendations for mitigation.
     """
     
@@ -173,7 +175,7 @@ while True:
     query = input("\nUser: ")
 
     if query.lower() in ["q", "exit"]:
-        print("\nExiting chat...")
+        print("\nExiting chat...\n")
         break
 
     result = agent_executor.invoke({"input": query})
