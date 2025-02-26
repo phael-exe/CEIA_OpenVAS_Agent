@@ -169,7 +169,7 @@ memory = ConversationBufferMemory(memory_key="chat_history", return_messages=Tru
 
 agent = create_openai_tools_agent(llm, toolkit, prompt)
 
-agent_executor = AgentExecutor(agent=agent, tools=toolkit, memory=memory, verbose=True)
+agent_executor = AgentExecutor(agent=agent, tools=toolkit, memory=memory, verbose=False)
 
 while True:
     query = input("\nUser: ")
