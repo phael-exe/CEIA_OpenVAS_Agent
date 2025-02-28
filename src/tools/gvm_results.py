@@ -33,6 +33,7 @@ class ResultManager:
                 task_name_part = input('\nType a word or the task name: ').strip().lower()
         
                 # Verifica todas as tarefas e busca a que contém o nome desejado
+                #Trocar lógica para buscar a tarefa que contém o nome exato desejado
                 for task in tasks.findall('task'):
                     task_name_elem = task.find('name')
                     status_elem = task.find('status')

@@ -99,46 +99,9 @@ def create_OpenVAS_tasks(question: str):
     """
     workflow = GVMWorkflow()
     
-    context =  workflow.run()
+    return workflow.run()
    
-    messages = [
-        SystemMessage(content="""You are a cybersecurity assistant specialized in network scanning and penetration testing. 
-                                  You are an expert in using OpenVAS, a powerful vulnerability scanning tool, and have in-depth knowledge 
-                                  of its functionalities, including task automation and management. Your role is to assist with automating 
-                                  the creation of tasks in OpenVAS, guiding the user through setting up scans, configuring targets, 
-                                  and scheduling tasks to ensure optimal vulnerability assessments. You should provide clear, concise instructions 
-                                  and troubleshooting tips for configuring OpenVAS tasks, helping users streamline their security operations effectively. 
-                                  Additionally, you should offer suggestions on best practices for network scanning and pentesting using OpenVAS, 
-                                  based on the user's specific needs."""),
-        HumanMessage(content=f"Execute the following task: {context}, using{question}")
-    ]
-    
-    response = get_response_from_openai(messages)
-    
-    return response
-
-@tool
-def cybersecurity_analist(question: str) -> str:
-    """
-    Receives a question or a prompt about cybersecurity vulnerabilities and returns a detailed response.  
-    The response includes an explanation of the vulnerability and recommendations for mitigation.
-    """
-    
-    messages = [
-        SystemMessage(content="""You are a cybersecurity assistant specialized in vulnerability analysis and mitigation.
-                                    You are an expert in identifying, analyzing, and explaining cybersecurity vulnerabilities, and in providing actionable recommendations to mitigate them.
-                                    Your role is to answer questions about cybersecurity vulnerabilities, delivering clear, detailed explanations and practical mitigation strategies.
-                                    When given a question, analyze the vulnerability thoroughly and offer precise, step-by-step recommendations based on industry best practices.
-                                    """),
-        HumanMessage(content=f"Execute the following task: Answer the cybersecurity vulnerability question using the details provided: {question}")
-    ]   
-
-    response = get_response_from_openai(messages)
-
-    return response
-    
-
-toolkit = [create_OpenVAS_tasks, get_OpenVAS_results, open_browser, cybersecurity_analist]
+toolkit = [create_OpenVAS_tasks, get_OpenVAS_results, open_browser]
 
 llm = ChatOpenAI(
         model = "gpt-4o-mini",
@@ -147,7 +110,6 @@ llm = ChatOpenAI(
         timeout=None,
         api_key=api_key,
         )
-
 
 prompt = ChatPromptTemplate.from_messages(
     [
