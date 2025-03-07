@@ -4,6 +4,7 @@ import webbrowser
 from dotenv import load_dotenv
 from src.tools.gvm_workflow import GVMWorkflow
 from src.tools.gvm_results import ResultManager
+from src.tools.art import art_main
 
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -117,6 +118,8 @@ prompt = ChatPromptTemplate.from_messages(
 agent = create_openai_tools_agent(llm, toolkit, prompt)
 
 agent_executor = AgentExecutor(agent=agent, tools=toolkit, verbose=False)
+
+art_main()
 
 while True:
     query = input("\nUser: ")
