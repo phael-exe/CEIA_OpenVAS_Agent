@@ -18,3 +18,5 @@ langgraph-checkpoint-sqlite
 langchain-chroma 
 pypdf 
 sentence-transformers
+pyfliget
+colorama

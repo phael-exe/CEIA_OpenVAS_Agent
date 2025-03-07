@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from src.tools.gvm_workflow import GVMWorkflow
 from src.tools.gvm_results import ResultManager
 
-from langchain.memory import ConversationBufferMemory
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain.tools import tool
@@ -80,18 +79,6 @@ def get_OpenVAS_results(question: str):
     return response
 
 @tool
-def open_browser(porta=9392):
-    """
-    This tool helps launch the GUI of OpenVAS, a vulnerability scanning tool.  
-    It will assist in automating the process of opening and accessing the OpenVAS 
-    graphical interface for managing scans and security assessments.  
-    """
-
-    url = f"http://127.0.0.1:{porta}/"
-    webbrowser.open(url)
-    print(f"\nOpening {url} in the browser...\n")
-
-@tool
 def create_OpenVAS_tasks(question: str):
     """
     This tool helps create tasks in OpenVAS, a vulnerability scanning tool.
@@ -101,7 +88,7 @@ def create_OpenVAS_tasks(question: str):
     
     return workflow.run()
    
-toolkit = [create_OpenVAS_tasks, get_OpenVAS_results, open_browser]
+toolkit = [create_OpenVAS_tasks, get_OpenVAS_results]
 
 llm = ChatOpenAI(
         model = "gpt-4o-mini",
@@ -127,11 +114,9 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-
 agent = create_openai_tools_agent(llm, toolkit, prompt)
 
-agent_executor = AgentExecutor(agent=agent, tools=toolkit, memory=memory, verbose=False)
+agent_executor = AgentExecutor(agent=agent, tools=toolkit, verbose=False)
 
 while True:
     query = input("\nUser: ")
