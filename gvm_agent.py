@@ -71,7 +71,7 @@ def get_OpenVAS_results(question: str):
                         to ensure the overall safety and resilience of the system. Ensure that all detected vulnerabilities are processed and reported. No vulnerability should be left unaddressed. 
                         If any vulnerability is missed, trigger a re-evaluation or notify the user.
                       
-                        IMPORTANT: If the task is not completed (status is not 'Done'), DO NOT return any vulnerability report. Instead, just execute the tool and return the status of the task."""),
+                        """),
         HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using{question}")
     ]
     
