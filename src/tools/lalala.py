@@ -64,11 +64,11 @@ class ResultManager:
                 return None
     
     def extract_multiple_results(self, xml_data: str) -> list:
-        """Aplica regex para extrair todos os <result> e retorna uma lista simplificada"""
+        """Aplica regex para extrair todos os <result> e retorna uma lista de dicionários"""
         pattern = re.compile(
             r'<result id="([^"]+)">.*?<name>(.*?)</name>.*?<host>(.*?)</host>.*?'
-            r'<port>(.*?)</port>.*?<cvss_base>(.*?)</cvss_base>.*?'
-            r'<solution[^>]*>(.*?)</solution>.*?<refs>(.*?)</refs>.*?'
+            r'<port>(.*?)</port>.*?<family>(.*?)</family>.*?<cvss_base>(.*?)</cvss_base>.*?'
+            r'<tags>(.*?)</tags>.*?<solution[^>]*>(.*?)</solution>.*?<refs>(.*?)</refs>.*?'
             r'<threat>(.*?)</threat>.*?<description>(.*?)</description>',
             re.DOTALL
         )
@@ -82,36 +82,26 @@ class ResultManager:
                 "name": match[1],
                 "host": match[2],
                 "port": match[3],
-                "cvss_base": match[4],
-                "solution": match[5],
-                "refs": match[6],
-                "threat": match[7],
-                "description": match[8],
+                "family": match[4],
+                "cvss_base": match[5],
+                "tags": match[6],
+                "solution": match[7],
+                "refs": match[8],
+                "threat": match[9],
+                "description": match[10],
             }
             results_list.append(result_data)
 
         return results_list
 
-def summarize_vulnerabilities(results_list):
-    """Transforma a lista de vulnerabilidades em um resumo compacto"""
-    summaries = []
-    
-    for result in results_list:
-        summary = (f"[{result['threat'].upper()}] {result['name']} (CVSS {result['cvss_base']}) "
-                   f"detected on {result['host']}:{result['port']}. "
-                   f"Solution: {result['solution'][:5000]}")  # Limita a solução para evitar excesso de texto
-        
-        summaries.append(summary)
-    
-    return summaries
 
 if __name__ == "__main__":
     sla = ResultManager()
     resultados = sla.result()
 
     if resultados:
-        summaries = summarize_vulnerabilities(resultados)
-
-        print("\n=== Compact Vulnerability Report ===")
-        for summary in summaries:
-            print(summary)
+        print("\n=== Extracted Data ===")
+        for i, result in enumerate(resultados):
+            print(f"\n--- Vulnerability {i+1} ---")
+            for key, value in result.items():
+                print(f"{key}: {value}")

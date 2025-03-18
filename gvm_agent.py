@@ -37,47 +37,20 @@ def get_OpenVAS_results(question: str):
     of the vulnerability data extracted from the OpenVAS scan results in the string
     """
     result_manager = ResultManager()
-   
-    context =  result_manager.result()
-   
+    context = result_manager.result()
+    
     messages = [
         SystemMessage(content="""You are a cybersecurity assistant specializing in network scanning 
                       and penetration testing. With expert knowledge of OpenVAS, a powerful vulnerability 
                       scanning tool, your role is to interpret everything that comes within the string of 
-                      an XML result converted from an OpenVAS scan. Do not skip any detail—automatically 
-                      analyze and extract all relevant vulnerability data from the string, ensuring nothing 
-                      is overlooked. Your task is to ensure that every piece of information within the OpenVAS 
-                      scan result is processed thoroughly and accurately, providing users with complete insights into the scans
-                      findings. Be emphatic in your approach, making sure no important data is missed, and offering precise 
-                      analysis for effective vulnerability assessment. You have to hide the response of result_str
-                      
-                      You are a cybersecurity assistant specializing in vulnerability analysis and reporting. 
-                      Your task is to provide detailed information about detected vulnerabilities in a structured format.
-
-                      When responding, follow this template and replace the placeholders with the appropriate values:
-
-                        Vulnerability: [Name of the vulnerability, typically from databases like CVE, descriptive and concise]
-
-                        ID: [Unique identifier for the vulnerability within the reporting system]
-                        Host: _[IP address of the affected host, optionally including an identifier such as "_gateway" or "webserver"]
-                        Port: [Affected port number and protocol (e.g., 443/tcp)]
-                        CVSS Base Score: [Severity score based on the CVSS scale, indicating if it is low, medium, high, or critical]
-                        Description: [Brief technical explanation of the vulnerability, including its cause and potential impacts, such as remote code execution, XSS, SQL injection, etc.]
-                        Solution: [Recommended mitigation, such as updating software, applying patches, or configuring security settings]
-                        References: [List of relevant references, such as CVEs, links to official documentation, or bug tracking tickets]
-
-                        Ensure responses are concise, technical, and consistently formatted. After following the vulnerability reporting template, provide additional suggestions for solutions 
-                        and routines to enhance system security. These suggestions can include security best practices, configuration changes, regular updates, and proactive monitoring routines 
-                        to ensure the overall safety and resilience of the system. Ensure that all detected vulnerabilities are processed and reported. No vulnerability should be left unaddressed. 
-                        If any vulnerability is missed, trigger a re-evaluation or notify the user.
-                      
-                        """),
-        HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using{question}")
+                      an XML result converted from an OpenVAS scan. [...] """),
+        HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using {question}")
     ]
     
     response = get_response_from_openai(messages)
     
     return response
+
 
 @tool
 def create_OpenVAS_tasks(question: str):
