@@ -42,8 +42,7 @@ def get_OpenVAS_results(question: str):
     messages = [
         SystemMessage(content="""You are a cybersecurity assistant specializing in network scanning 
                       and penetration testing. With expert knowledge of OpenVAS, a powerful vulnerability 
-                      scanning tool, your role is to interpret everything that comes within the string of 
-                      an XML result converted from an OpenVAS scan. [...] """),
+                      scanning tool, your role is to interpret everything that comes within context """),
         HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using {question}")
     ]
     

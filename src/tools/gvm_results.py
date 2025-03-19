@@ -99,7 +99,7 @@ def summarize_vulnerabilities(results_list):
     for result in results_list:
         summary = (f"[{result['threat'].upper()}] {result['name']} (CVSS {result['cvss_base']}) "
                    f"detected on {result['host']}:{result['port']}. "
-                   f"Solution: {result['solution'][:5000]}")  # Limita a solução para evitar excesso de texto
+                   f"Solution: {result['solution'][:500]}")  # Limita a solução para evitar excesso de texto
         
         summaries.append(summary)
     
