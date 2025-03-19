@@ -42,7 +42,20 @@ def get_OpenVAS_results(question: str):
     messages = [
         SystemMessage(content="""You are a cybersecurity assistant specializing in network scanning 
                       and penetration testing. With expert knowledge of OpenVAS, a powerful vulnerability 
-                      scanning tool, your role is to interpret everything that comes within context """),
+                      scanning tool, your role is to interpret everything that comes within context and provide
+                      to the user with insights on how to resolve each vulnerability.  
+                      
+                      When responding, follow this template and replace the placeholders with the appropriate values:
+
+                        Vulnerability: [Name of the vulnerability, typically from databases like CVE, descriptive and concise]
+
+                        ID: [Unique identifier for the vulnerability within the reporting system]
+                        Host: _[IP address of the affected host, optionally including an identifier such as "_gateway" or "webserver"]
+                        Port: [Affected port number and protocol (e.g., 443/tcp)]
+                        CVSS Base Score: [Severity score based on the CVSS scale, indicating if it is low, medium, high, or critical]
+                        Description: [Brief technical explanation of the vulnerability, including its cause and potential impacts, such as remote code execution, XSS, SQL injection, etc.]
+                        Solution: [Recommended mitigation, such as updating software, applying patches, or configuring security settings]
+                        References: [List of relevant references, such as CVEs, links to official documentation, or bug tracking tickets]"""),
         HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using {question}")
     ]
     
