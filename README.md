@@ -39,13 +39,13 @@ Make an .env file to storage sensible informations of your code, like OpenVAS us
 To acess gvmd.sock to made an UnixSocketConnection to make requests for GVM API, try:
 
 ```bash
-   sudo chmod 660 /var/run/gvmd/gvmd.sock
+   sudo chmod 660 /run/gvmd/gvmd.sock
    ```
 
 If doesn't work, try:
 
 ```bash
-   sudo chmod 777 /var/run/gvmd.sock
+   sudo chmod 777 /run/gvmd/gvmd.sock
    ```
 
 ---
