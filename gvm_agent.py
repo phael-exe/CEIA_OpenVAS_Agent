@@ -1,20 +1,27 @@
+# gvm_agent.py
+
 import os
-import webbrowser
+import functools
+import operator
+from typing import TypedDict, Annotated, Sequence, Literal
 
 from dotenv import load_dotenv
+from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_openai import ChatOpenAI
+from langchain_core.tools import tool
+from langgraph.graph import StateGraph, END
+from pydantic import BaseModel, Field
+
+# Importações das suas ferramentas
 from src.tools.gvm_workflow import GVMWorkflow
 from src.tools.gvm_results import ResultManager
-from src.tools.art import art_main
+from src.art.art import art_main
 
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain.tools import tool
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-
+# Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
 
-api_key = os.getenv("OPENAI_API_KEY")
+# --- Ferramentas ---
 
 def get_response_from_openai(message):
 
@@ -23,24 +30,35 @@ def get_response_from_openai(message):
         temperature=0.1,
         max_completion_tokens=None,
         timeout=None,
-        api_key=api_key,
         )
     
     response = llm.invoke(message)
     
     return response
 
+llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL_ID"), temperature=0)
+
 @tool
-def get_OpenVAS_results(question: str):
-    """
-    This tool assists in interpreting an OpenVAS scan result. It helps automate the analysis and understanding 
-    of the vulnerability data extracted from the OpenVAS scan results in the string
-    """
-    result_manager = ResultManager()
-    context = result_manager.result()
-    
-    messages = [
-        SystemMessage(content="""You are a cybersecurity assistant specializing in network scanning 
+def create_openvas_task(question: str) -> str:
+    """Cria e inicia uma nova tarefa de varredura de vulnerabilidades no OpenVAS."""
+    print("--- EXECUTANDO A FERRAMENTA: create_openvas_task ---")
+    try:
+        workflow = GVMWorkflow()
+        result = workflow.run()
+        # Garante que sempre retornamos uma string para o LLM
+        return f"Ferramenta 'create_openvas_task' executada com sucesso. Resultado: {str(result)}"
+    except Exception as e:
+        return f"Erro ao executar a ferramenta 'create_openvas_task': {e}"
+
+@tool
+def get_openvas_results(question: str) -> str:
+    """Busca e analisa os resultados de uma varredura de vulnerabilidades do OpenVAS."""
+    print("--- EXECUTANDO A FERRAMENTA: get_openvas_results ---")
+    try:
+        result_manager = ResultManager()
+        context = result_manager.result()
+        messages = [
+            SystemMessage(content="""You are a cybersecurity assistant specializing in network scanning 
                       and penetration testing. With expert knowledge of OpenVAS, a powerful vulnerability 
                       scanning tool, your role is to interpret everything that comes within context and provide
                       to the user with insights on how to resolve each vulnerability.  
@@ -59,59 +77,123 @@ def get_OpenVAS_results(question: str):
         HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using {question}")
     ]
     
-    response = get_response_from_openai(messages)
+        response = get_response_from_openai(messages)
     
-    return response
+        return response.content
+    except Exception as e:
+        return f"Erro ao executar a ferramenta 'get_openvas_results': {e}"
 
 
-@tool
-def create_OpenVAS_tasks(question: str):
-    """
-    This tool helps create tasks in OpenVAS, a vulnerability scanning tool.
-    It will assist in automating task creation for network scans and pentesting tasks within OpenVAS.
-    """
-    workflow = GVMWorkflow()
-    
-    return workflow.run()
-   
-toolkit = [create_OpenVAS_tasks, get_OpenVAS_results]
+# --- Estrutura Multiagente ---
 
-llm = ChatOpenAI(
-        model = "gpt-4o-mini",
-        temperature=0.1,
-        max_completion_tokens=None,
-        timeout=None,
-        api_key=api_key,
-        )
+class AgentState(TypedDict):
+    messages: Annotated[Sequence[BaseMessage], operator.add]
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", """
-                        You are a cybersecurity assistant specialized in network scanning and penetration testing. 
-                        You are an expert in using OpenVAS. Use your tools to answer questions.
-                        Please generate a response organized in bullet points, with headings and lists to make it easier to read.
+def tool_node(state: AgentState, tool_to_run: callable) -> dict:
+    last_message = state['messages'][-1]
+    tool_input = {"question": last_message.content}
+    result = tool_to_run.invoke(tool_input)
+    return {"messages": [ToolMessage(content=str(result), tool_call_id="tool_node_call")]}
 
-                        Return only a message with the task created. 
-         """),
-        MessagesPlaceholder("chat_history", optional=True),
-        ("human", "{input}"),
-        MessagesPlaceholder("agent_scratchpad"),
-        
-    ]
+task_creator_node = functools.partial(tool_node, tool_to_run=create_openvas_task)
+result_analyzer_node = functools.partial(tool_node, tool_to_run=get_openvas_results)
+
+# --- Supervisor com Saída Estruturada ---
+
+class Route(BaseModel):
+    """Define a rota para o próximo passo."""
+    next: Literal["TaskCreator", "ResultAnalyzer", "FINISH"] = Field(
+        ...,
+        description="A rota para o próximo trabalhador ou 'FINISH' para encerrar."
+    )
+
+llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL_ID"), temperature=0)
+structured_llm_router = llm.with_structured_output(Route)
+
+system_prompt_supervisor = (
+    "Você é um supervisor especialista em OpenVAS. Analise a conversa e decida o próximo passo.\n"
+    " - Se o usuário quer CRIAR, INICIAR ou EXECUTAR uma varredura, o próximo passo é 'TaskCreator'.\n"
+    " - Se o usuário quer ANALISAR, VER, OBTER ou BUSCAR resultados, o próximo passo é 'ResultAnalyzer'.\n"
+    " - Se a intenção não é clara, o próximo passo é 'FINISH'."
 )
 
-agent = create_openai_tools_agent(llm, toolkit, prompt)
+prompt_supervisor = ChatPromptTemplate.from_messages([
+    ("system", system_prompt_supervisor),
+    MessagesPlaceholder(variable_name="messages"),
+])
 
-agent_executor = AgentExecutor(agent=agent, tools=toolkit, verbose=False)
+supervisor_chain = prompt_supervisor | structured_llm_router
 
-art_main()
+### MUDANÇA PRINCIPAL: Lógica de Roteamento Robusta ###
+def router_function(state: AgentState):
+    """
+    Decide o próximo passo. Se uma ferramenta acabou de rodar, finaliza.
+    Caso contrário, pergunta ao supervisor.
+    """
+    print("--- Decisão do Supervisor ---")
 
-while True:
-    query = input("\nUser: ")
+    # Verifica se a última mensagem é o resultado de uma ferramenta.
+    # Se for, o trabalho do agente terminou e o ciclo deve ser finalizado.
+    if isinstance(state['messages'][-1], ToolMessage):
+        print("Trabalho do agente concluído. Finalizando.")
+        return "FINISH"
 
-    if query.lower() in ["q", "exit"]:
-        print("\nExiting chat...\n")
-        break
+    # Se não, é a primeira chamada. Pergunta ao LLM qual rota seguir.
+    route_decision = supervisor_chain.invoke(state)
+    print(f"Próximo passo decidido: {route_decision.next}")
+    return route_decision.next
 
-    result = agent_executor.invoke({"input": query})
-    print(f"\n{result["output"]}\n")
+
+# --- Construção do Grafo ---
+workflow = StateGraph(AgentState)
+
+workflow.add_node("TaskCreator", task_creator_node)
+workflow.add_node("ResultAnalyzer", result_analyzer_node)
+# O nó supervisor não faz nada por si só, apenas serve como ponto de roteamento
+workflow.add_node("supervisor", lambda state: {"messages": []})
+
+# As arestas de volta para o supervisor
+workflow.add_edge("TaskCreator", "supervisor")
+workflow.add_edge("ResultAnalyzer", "supervisor")
+
+# Roteamento condicional a partir do supervisor
+workflow.add_conditional_edges(
+    "supervisor",
+    router_function,
+    {
+        "TaskCreator": "TaskCreator",
+        "ResultAnalyzer": "ResultAnalyzer",
+        "FINISH": END,
+    },
+)
+
+workflow.set_entry_point("supervisor")
+graph = workflow.compile()
+
+# --- Loop Principal de Interação ---
+if __name__ == "__main__":
+    if not os.getenv("OPENAI_API_KEY"):
+        print("ERRO: A variável de ambiente OPENAI_API_KEY não foi encontrada.")
+    else:
+        art_main()
+        while True:
+            query = input("\nUser: ")
+            if query.lower() in ["q", "exit", "quit", "sair"]:
+                print("\nSaindo...")
+                break
+
+            initial_state = {"messages": [HumanMessage(content=query)]}
+
+            try:
+                print("\n--- Início do Fluxo ---")
+                final_state = graph.invoke(initial_state, {"recursion_limit": 5})
+                print("\n--- Fim do Fluxo ---")
+                final_message = final_state['messages'][-1]
+                print(f"\nResultado Final: {final_message.content}")
+
+
+            except Exception as e:
+                import traceback
+                print(f"\n--- Ocorreu um Erro Inesperado ---")
+                traceback.print_exc()
+                print("------------------------------------\n")
