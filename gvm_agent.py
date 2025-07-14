@@ -13,47 +13,44 @@ from langchain_core.tools import tool
 from langgraph.graph import StateGraph, END
 from pydantic import BaseModel, Field
 
-# Importações das suas ferramentas
+# Imports from your tools
 from src.tools.gvm_workflow import GVMWorkflow
 from src.tools.gvm_results import ResultManager
 from src.art.art import art_main
 
-# Carrega as variáveis de ambiente do arquivo .env
+# Loads environment variables from the .env file
 load_dotenv()
 
-# --- Ferramentas ---
+# --- Tools ---
 
 def get_response_from_openai(message):
-
     llm = ChatOpenAI(
-        model = "gpt-4o-mini",
+        model="gpt-4o-mini",
         temperature=0.1,
         max_completion_tokens=None,
         timeout=None,
-        )
-    
+    )
     response = llm.invoke(message)
-    
     return response
 
 llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL_ID"), temperature=0)
 
 @tool
 def create_openvas_task(question: str) -> str:
-    """Cria e inicia uma nova tarefa de varredura de vulnerabilidades no OpenVAS."""
-    print("--- EXECUTANDO A FERRAMENTA: create_openvas_task ---")
+    """Creates and starts a new vulnerability scan task in OpenVAS."""
+    print("\n--- EXECUTING TOOL: create_openvas_task ---")
     try:
         workflow = GVMWorkflow()
         result = workflow.run()
-        # Garante que sempre retornamos uma string para o LLM
-        return f"Ferramenta 'create_openvas_task' executada com sucesso. Resultado: {str(result)}"
+        # Ensures we always return a string to the LLM
+        return f"\nTool 'create_openvas_task' executed successfully. Result: {str(result)}"
     except Exception as e:
-        return f"Erro ao executar a ferramenta 'create_openvas_task': {e}"
+        return f"\nError executing tool 'create_openvas_task': {e}"
 
 @tool
 def get_openvas_results(question: str) -> str:
-    """Busca e analisa os resultados de uma varredura de vulnerabilidades do OpenVAS."""
-    print("--- EXECUTANDO A FERRAMENTA: get_openvas_results ---")
+    """Fetches and analyzes the results of an OpenVAS vulnerability scan."""
+    print("\n--- EXECUTING TOOL: get_openvas_results ---")
     try:
         result_manager = ResultManager()
         context = result_manager.result()
@@ -61,7 +58,7 @@ def get_openvas_results(question: str) -> str:
             SystemMessage(content="""You are a cybersecurity assistant specializing in network scanning 
                       and penetration testing. With expert knowledge of OpenVAS, a powerful vulnerability 
                       scanning tool, your role is to interpret everything that comes within context and provide
-                      to the user with insights on how to resolve each vulnerability.  
+                      the user with insights on how to resolve each vulnerability.  
                       
                       When responding, follow this template and replace the placeholders with the appropriate values:
 
@@ -74,17 +71,16 @@ def get_openvas_results(question: str) -> str:
                         Description: [Brief technical explanation of the vulnerability, including its cause and potential impacts, such as remote code execution, XSS, SQL injection, etc.]
                         Solution: [Recommended mitigation, such as updating software, applying patches, or configuring security settings]
                         References: [List of relevant references, such as CVEs, links to official documentation, or bug tracking tickets]"""),
-        HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using {question}")
-    ]
+            HumanMessage(content=f"Please analyze the following OpenVAS scan result: {context}, using {question}")
+        ]
     
         response = get_response_from_openai(messages)
     
         return response.content
     except Exception as e:
-        return f"Erro ao executar a ferramenta 'get_openvas_results': {e}"
+        return f"\nError executing tool 'get_openvas_results': {e}"
 
-
-# --- Estrutura Multiagente ---
+# --- Multi-agent Structure ---
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -98,23 +94,22 @@ def tool_node(state: AgentState, tool_to_run: callable) -> dict:
 task_creator_node = functools.partial(tool_node, tool_to_run=create_openvas_task)
 result_analyzer_node = functools.partial(tool_node, tool_to_run=get_openvas_results)
 
-# --- Supervisor com Saída Estruturada ---
+# --- Supervisor with Structured Output ---
 
 class Route(BaseModel):
-    """Define a rota para o próximo passo."""
+    """Defines the route for the next step."""
     next: Literal["TaskCreator", "ResultAnalyzer", "FINISH"] = Field(
         ...,
-        description="A rota para o próximo trabalhador ou 'FINISH' para encerrar."
+        description="The route to the next worker or 'FINISH' to end."
     )
 
-llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL_ID"), temperature=0)
 structured_llm_router = llm.with_structured_output(Route)
 
 system_prompt_supervisor = (
-    "Você é um supervisor especialista em OpenVAS. Analise a conversa e decida o próximo passo.\n"
-    " - Se o usuário quer CRIAR, INICIAR ou EXECUTAR uma varredura, o próximo passo é 'TaskCreator'.\n"
-    " - Se o usuário quer ANALISAR, VER, OBTER ou BUSCAR resultados, o próximo passo é 'ResultAnalyzer'.\n"
-    " - Se a intenção não é clara, o próximo passo é 'FINISH'."
+    "You are an OpenVAS expert supervisor. Analyze the conversation and decide the next step.\n"
+    " - If the user wants to CREATE, START, or RUN a scan, the next step is 'TaskCreator'.\n"
+    " - If the user wants to ANALYZE, VIEW, GET, or FETCH results, the next step is 'ResultAnalyzer'.\n"
+    " - If the intent is unclear, the next step is 'FINISH'."
 )
 
 prompt_supervisor = ChatPromptTemplate.from_messages([
@@ -124,39 +119,38 @@ prompt_supervisor = ChatPromptTemplate.from_messages([
 
 supervisor_chain = prompt_supervisor | structured_llm_router
 
-### MUDANÇA PRINCIPAL: Lógica de Roteamento Robusta ###
+### MAIN CHANGE: Robust Routing Logic ###
 def router_function(state: AgentState):
     """
-    Decide o próximo passo. Se uma ferramenta acabou de rodar, finaliza.
-    Caso contrário, pergunta ao supervisor.
+    Decides the next step. If a tool has just run, it finishes. 
+    Otherwise, it asks the supervisor.
     """
-    print("--- Decisão do Supervisor ---")
+    print("\n--- Supervisor Decision ---")
 
-    # Verifica se a última mensagem é o resultado de uma ferramenta.
-    # Se for, o trabalho do agente terminou e o ciclo deve ser finalizado.
+    # Checks if the last message is the result of a tool.
+    # If so, the agent's job is done and the cycle should be ended.
     if isinstance(state['messages'][-1], ToolMessage):
-        print("Trabalho do agente concluído. Finalizando.")
+        print("\nAgent's job is complete. Finishing.")
         return "FINISH"
 
-    # Se não, é a primeira chamada. Pergunta ao LLM qual rota seguir.
+    # If not, it's the first call. Asks the LLM which route to take.
     route_decision = supervisor_chain.invoke(state)
-    print(f"Próximo passo decidido: {route_decision.next}")
+    print(f"\nNext step decided: {route_decision.next}")
     return route_decision.next
 
-
-# --- Construção do Grafo ---
+# --- Graph Construction ---
 workflow = StateGraph(AgentState)
 
 workflow.add_node("TaskCreator", task_creator_node)
 workflow.add_node("ResultAnalyzer", result_analyzer_node)
-# O nó supervisor não faz nada por si só, apenas serve como ponto de roteamento
+# The supervisor node does nothing on its own, it just serves as a routing point
 workflow.add_node("supervisor", lambda state: {"messages": []})
 
-# As arestas de volta para o supervisor
+# The edges back to the supervisor
 workflow.add_edge("TaskCreator", "supervisor")
 workflow.add_edge("ResultAnalyzer", "supervisor")
 
-# Roteamento condicional a partir do supervisor
+# Conditional routing from the supervisor
 workflow.add_conditional_edges(
     "supervisor",
     router_function,
@@ -170,30 +164,29 @@ workflow.add_conditional_edges(
 workflow.set_entry_point("supervisor")
 graph = workflow.compile()
 
-# --- Loop Principal de Interação ---
+# --- Main Interaction Loop ---
 if __name__ == "__main__":
     if not os.getenv("OPENAI_API_KEY"):
-        print("ERRO: A variável de ambiente OPENAI_API_KEY não foi encontrada.")
+        print("ERROR: The OPENAI_API_KEY environment variable was not found.")
     else:
         art_main()
         while True:
             query = input("\nUser: ")
             if query.lower() in ["q", "exit", "quit", "sair"]:
-                print("\nSaindo...")
+                print("\nExiting...")
                 break
 
             initial_state = {"messages": [HumanMessage(content=query)]}
 
             try:
-                print("\n--- Início do Fluxo ---")
+                print("\n--- Start of Flow ---")
                 final_state = graph.invoke(initial_state, {"recursion_limit": 5})
-                print("\n--- Fim do Fluxo ---")
+                print("\n--- End of Flow ---")
                 final_message = final_state['messages'][-1]
-                print(f"\nResultado Final: {final_message.content}")
-
+                print(f"\nFinal Result: {final_message.content}")
 
             except Exception as e:
                 import traceback
-                print(f"\n--- Ocorreu um Erro Inesperado ---")
+                print(f"\n--- An Unexpected Error Occurred ---")
                 traceback.print_exc()
                 print("------------------------------------\n")
