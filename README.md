@@ -64,9 +64,36 @@ Launch the OpenVAS Agent with the following command:
 python3 main.py
 ```
 
+## 📂 Project Structure
+
+```
+.
+├── .gitignore
+├── ENV.md
+├── LICENSE
+├── main.py
+├── openvasagent.png
+├── README.md
+├── requirements.txt
+└── src/
+    ├── agents/
+    │   ├── __init__.py
+    │   ├── result_analyzer.py
+    │   ├── supervisor.py
+    │   └── task_creator.py
+    ├── art/
+    │   └── art.py
+    ├── __pycache__/
+    ├── state.py
+    └── tools/
+        ├── __init__.py
+        ├── gvm_results.py
+        └── gvm_workflow.py
+```
+
 ## 🤝 Contributing
 
-We welcome contributions from the community! If you'd like to get involved, please check out our [Contributing Guide](CONTRIBUTING.md) for more information on how to:
+We welcome contributions from the community! If you'd like to get involved, feel free to:
 
 *   Report bugs and request features
 *   Submit pull requests
