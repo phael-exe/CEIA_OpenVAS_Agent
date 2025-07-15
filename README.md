@@ -1,59 +1,81 @@
-# OPENVAS AGENT
+# OpenVAS Agent: Your AI-Powered Vulnerability Analysis Copilot
 
-![OpenVAS Agente Logo](openvasagent.png)
+![OpenVAS Agent Logo](openvasagent.png)
 
-This repository have a goal of make a plan for integration of an AI with the OpenVAS API, aiming to eventually develop a copilot capable of assisting users in vulnerability analysis and result interpretation. The idea is that the tool could automate tasks such as prioritizing alerts, suggesting remediations based on best practices, and providing detailed explanations. This planning will consider challenges such as secure authentication, user-friendly response formatting, and the possibility of customizing the experience for specific user scenarios.
+Welcome to the OpenVAS Agent project! This tool leverages the power of AI to revolutionize how you interact with the OpenVAS vulnerability scanner. Our goal is to create a powerful, intuitive copilot that assists you in analyzing vulnerabilities, interpreting results, and streamlining your security workflow.
 
----
+## 🚀 Features
 
-## **OpenVAS Instalation**
+*   **AI-Powered Vulnerability Analysis:** Go beyond simple scans. The agent helps you understand the real-world impact of vulnerabilities.
+*   **Intelligent Prioritization:** Automatically prioritize alerts based on severity, exploitability, and asset criticality.
+*   **Actionable Remediation:** Receive best-practice remediation suggestions tailored to your specific environment.
+*   **User-Friendly Interface:** Interact with OpenVAS through a simple, conversational interface.
+*   **Customizable Workflows:** Adapt the agent to your unique security needs and scenarios.
 
-![Greenbone Logo](https://www.greenbone.net/wp-content/uploads/gb_new-logo_horizontal_rgb_small.png)
+## 🔧 Getting Started
 
-OpenVAS Install Guide: https://dev.iachieved.it/iachievedit/installing-greenbone-openvas-on-ubuntu-24-04/ (Ubuntu 24.04)
-OpenVAS GitHub: https://github.com/greenbone/openvas-scanner 
+### Pre-requisites
 
-For Kali Linux: 
+*   An operational OpenVAS/Greenbone Vulnerability Management (GVM) instance.
+*   Python 3.8 or higher.
+*   Access to the GVM API.
 
-```bash
-   sudo apt install gvm
-   ```
----
+### Installation
 
-## **Requirements**
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/raphaelalvesdev/CEIA_OpenVAS_Agent
+    cd CEIA_OpenVAS_Agent
+    ```
 
-Install the necessary dependencies, use a virtual environment for this, and then install the dependencies in your virtual environment
+2.  **Create and activate a virtual environment:**
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    ```
 
- ```bash
-   python3 -m .venv venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+3.  **Install the required dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-Developer Interface for Greenbone Vulnerability Management(OpenVAS) API: https://greenbone.github.io/python-gvm/api/api.html
+4.  **Configure your environment:**
+    Create a `.env` file in the root directory of the project and add the following the informations of `ENV.md`
 
-Make an .env file to storage sensible informations of your code, like OpenVAS user, password, OPENAI api key
+### Permissions
 
----
-
-## **Requests**
-
-To acess gvmd.sock to made an UnixSocketConnection to make requests for GVM API, try:
-
-```bash
-   sudo chmod 660 /run/gvmd/gvmd.sock
-   ```
-
-If doesn't work, try:
-
-```bash
-   sudo chmod 777 /run/gvmd/gvmd.sock
-   ```
-
----
-
-To run this:
+To allow the agent to connect to the `gvmd.sock` for API requests, you may need to adjust its permissions:
 
 ```bash
-   python3 gvm_agent.py
-   ```
+sudo chmod 660 /run/gvmd/gvmd.sock
+```
+
+If you still encounter issues, you can try a more permissive setting (use with caution):
+
+```bash
+sudo chmod 777 /run/gvmd/gvmd.sock
+```
+
+### Running the Agent
+
+Launch the OpenVAS Agent with the following command:
+
+```bash
+python3 main.py
+```
+
+## 🤝 Contributing
+
+We welcome contributions from the community! If you'd like to get involved, please check out our [Contributing Guide](CONTRIBUTING.md) for more information on how to:
+
+*   Report bugs and request features
+*   Submit pull requests
+*   Improve documentation
+
+## 📜 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## 📧 Contact
+
+Have questions or feedback? Feel free to reach out to us at [your-email@example.com](mailto:your-email@example.com).
