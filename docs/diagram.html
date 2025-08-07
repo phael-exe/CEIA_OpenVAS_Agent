@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagrama do Projeto OpenVAS Agent</title>
+<style>
+    body {
+        font-family: sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        flex-direction: column;
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 1200px;
+    }
+    .component {
+        background-color: #ffffff;
+        border: 2px solid #007bff;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        min-width: 200px;
+    }
+    .user-input {
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+    }
+    .supervisor {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+    }
+    .agent {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+    .tool {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    .final-output {
+        background-color: #e2e3e5;
+        border-color: #d6d8db;
+    }
+    h2, h3 {
+        color: #0056b3;
+    }
+    .component h3 {
+        margin-top: 0;
+        color: #0056b3;
+    }
+     .component p {
+        margin-bottom: 5px;
+        margin-top: 5px;
+    }
+    .arrow {
+        position: relative;
+        margin: 20px 0;
+        text-align: center;
+    }
+    .arrow::after {
+        content: '▼';
+        font-size: 24px;
+        color: #007bff;
+    }
+    .arrow-text {
+        position: absolute;
+        width: 150px;
+        left: calc(50% - 75px);
+        top: -15px;
+        background: #f4f4f9;
+        padding: 0 5px;
+        font-style: italic;
+    }
+     .conditional-arrows {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        width: 100%;
+        margin: 20px 0;
+    }
+    .branch {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 20px;
+    }
+    .branch .arrow::after {
+        content: '▼';
+    }
+     .branch .horizontal-line {
+        height: 2px;
+        background-color: #007bff;
+        width: 100%;
+        margin-top: 20px;
+    }
+    .join-point {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        position: relative;
+        margin-top: 20px;
+    }
+    .join-point .line-up {
+        width: 2px;
+        height: 20px;
+        background-color: #007bff;
+    }
+    .horizontal-line-full {
+        height: 2px;
+        background-color: #007bff;
+        position: absolute;
+        top: 0;
+        left: 25%;
+        right: 25%;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Diagrama de Fluxo do OpenVAS Agent</h2>
+
+    <div class="component user-input">
+        <h3>Início da Aplicação</h3>
+        <p>1. Execução do <strong>main.py</strong></p>
+        <p>2. Exibição da arte ASCII (art.py)</p>
+        <p>3. Entrada do Usuário (Query)</p>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="component supervisor">
+        <h3>Agente Supervisor</h3>
+        <p>Recebe a query e decide a rota.</p>
+        <p><strong>Função:</strong> router_function</p>
+        <p><strong>Lógica:</strong> O LLM analisa a intenção do usuário.</p>
+    </div>
+
+    <div class="arrow">
+        <span class="arrow-text">Roteamento Condicional</span>
+    </div>
+
+    <div class="conditional-arrows">
+        <div class="branch">
+            <div class="arrow"><span class="arrow-text">[Criar, Iniciar]</span></div>
+            <div class="component agent">
+                <h3>Agente TaskCreator</h3>
+                <p><strong>Ferramenta:</strong> create_openvas_task</p>
+                <p>Cria e inicia um scan no OpenVAS.</p>
+            </div>
+            <div class="arrow"></div>
+            <div class="component tool">
+                <h3>Tool: GVMWorkflow</h3>
+                <p>Interage com o usuário para obter detalhes da tarefa (alvo, nome, etc.).</p>
+            </div>
+            <div class="line-up"></div>
+        </div>
+
+        <div class="branch">
+            <div class="arrow"><span class="arrow-text">[Analisar, Ver]</span></div>
+            <div class="component agent">
+                <h3>Agente ResultAnalyzer</h3>
+                <p><strong>Ferramenta:</strong> get_openvas_results</p>
+                <p>Busca e analisa os resultados do scan.</p>
+            </div>
+            <div class="arrow"></div>
+            <div class="component tool">
+                <h3>Tool: ResultManager</h3>
+                <p>Interage com o usuário para identificar a tarefa e busca os resultados (XML).</p>
+            </div>
+             <div class="line-up"></div>
+        </div>
+    </div>
+    
+    <div class="join-point">
+        <div class="horizontal-line-full"></div>
+    </div>
+
+
+    <div class="arrow">
+        <span class="arrow-text">Resultado da Ferramenta (ToolMessage)</span>
+    </div>
+
+    <div class="component supervisor">
+        <h3>Retorno ao Supervisor</h3>
+        <p>Recebe o <strong>ToolMessage</strong>.</p>
+        <p><strong>Lógica:</strong> Como uma ferramenta foi executada, o ciclo é finalizado.</p>
+    </div>
+
+    <div class="arrow">
+         <span class="arrow-text">FINISH</span>
+    </div>
+
+    <div class="component final-output">
+        <h3>Saída Final</h3>
+        <p>O resultado final é exibido para o usuário no console.</p>
+        <p>(Ex: "Tarefa criada com sucesso" ou a análise da vulnerabilidade).</p>
+    </div>
+
+</div>
+
+</body>
+</html>
