@@ -1,4 +1,5 @@
 import functools
+import os
 from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage, SystemMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
@@ -9,7 +10,7 @@ from ..state import AgentState  # Import AgentState
 def get_response_from_openai(message: list[BaseMessage]):
     """Função para obter resposta do OpenAI."""
     llm = ChatOpenAI(
-        model="gpt-4o-mini",
+        model=os.environ.get("OPENAI_MODEL_ID"),
         temperature=0.1,
         max_tokens=None, # Changed from max_completion_tokens
         timeout=None,
