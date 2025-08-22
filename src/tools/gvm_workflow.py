@@ -24,34 +24,8 @@ class AuthenticationManager:
         gmp.authenticate(self.username, self.password)
 
 class TargetManager:
-    def create_target(self, gmp):
+    def create_target(self, gmp, target_name, target_host, port_list_id):
         """Cria um novo alvo e retorna seu ID."""
-        target_name = input("\nType a name for the target: ")
-        target_host = input("\nType a host for the target: ")
-
-        # Obtém a lista de portas disponíveis
-        port_lists = self.get_port_lists(gmp)
-        if not port_lists:
-            raise Exception("No port lists found!")
-
-        # Exibe as listas de portas para o usuário
-        print("\nAvailable Port Lists:")
-        for index, (name, id) in enumerate(port_lists.items(), start=1):
-            print(f"{index}: {name}")
-
-        # Solicita a escolha do usuário
-        choice = input("\nEnter the number of the port list you want to use: ").strip()
-        try:
-            choice_index = int(choice) - 1  # Converte para índice base 0
-            if choice_index < 0 or choice_index >= len(port_lists):
-                raise ValueError("Invalid choice!")
-        except ValueError:
-            raise Exception("Invalid input! Please enter a valid number.")
-
-        # Obtém o ID da lista de portas escolhida
-        port_list_id = list(port_lists.values())[choice_index]
-
-        # Cria o target com a lista de portas escolhida
         target = gmp.create_target(
             name=target_name,
             hosts=[target_host],
@@ -73,6 +47,38 @@ class TargetManager:
             port_list_dict[name] = id
         
         return port_list_dict
+
+    def get_port_list_id_by_name(self, gmp, name):
+        """Obtém o ID de uma lista de portas pelo nome."""
+        port_lists = self.get_port_lists(gmp)
+        for port_list_name, port_list_id in port_lists.items():
+            if port_list_name == name:
+                return port_list_id
+        raise Exception(f"Port list '{name}' not found!")
+
+    def get_or_create_target_id(self, gmp, target_host, target_name=None, port_list_name="All IANA assigned TCP"):
+        """Obtém o ID de um alvo existente ou cria um novo se não existir."""
+        targets = gmp.get_targets()
+        for target in targets.findall('target'):
+            if target.findtext('hosts') == target_host:
+                print(f"Using existing target: {target.findtext('name')} ({target_host})")
+                return target.get('id')
+
+        # Se o alvo não existe, cria um novo
+        if not target_name:
+            target_name = f"Target - {target_host}"
+
+        port_list_id = self.get_port_list_id_by_name(gmp, port_list_name)
+
+        target = gmp.create_target(
+            name=target_name,
+            hosts=[target_host],
+            alive_test='Scan Config Default',
+            allow_simultaneous_ips=True,
+            port_list_id=port_list_id
+        )
+        print(f"New target created: {target_name} ({target_host})")
+        return target.get('id')
 
     def get_target_id(self, gmp):
         """Permite ao usuário escolher um alvo existente ou criar um novo."""
@@ -132,9 +138,9 @@ class TaskManager:
         self.scanner_manager = scanner_manager
         self.task_creator = task_creator
 
-    def prepare_task(self, gmp, task_name):
+    def prepare_task(self, gmp, task_name, target_host):
         """Prepara os IDs necessários para criar uma tarefa e chama o TaskCreator."""
-        target_id = self.target_manager.get_target_id(gmp)
+        target_id = self.target_manager.get_or_create_target_id(gmp, target_host)
         config_id = self.config_manager.get_config_id(gmp)
         scanner_id = self.scanner_manager.get_scanner_id(gmp)
         return self.task_creator.create_task(gmp, task_name, config_id, target_id, scanner_id)
@@ -167,26 +173,26 @@ class GVMWorkflow:
         )
         self.task_starter = TaskStarter()
 
-    def run(self):
+    def run(self, task_name, target_host):
         """Executa o fluxo completo."""
         with self.connection_manager.connect() as gmp:
             try:
                 self.auth_manager.authenticate(gmp)
 
-                # Solicita o nome da tarefa
-                task_name = input("\nType a name for the task: ")
-
                 # Prepara e cria a tarefa
-                task = self.task_manager.prepare_task(gmp, task_name)
+                task = self.task_manager.prepare_task(gmp, task_name, target_host)
                 print("\nTask successfully created:", task)
 
                 # Inicia a tarefa
                 start_response = self.task_starter.start_task(gmp, task_name)
                 print("\nTask started successfully:", start_response)
                 print("\nRunning task...")
+                return f"Task '{task_name}' for host '{target_host}' created and started successfully."
             except Exception as e:
                 print(f"\nError: {e}")
+                return f"Error creating or starting task: {e}"
 
 if __name__ == "__main__":
     workflow = GVMWorkflow()
-    workflow.run()
+    # Example usage for testing
+    # workflow.run("Test Task", "127.0.0.1")

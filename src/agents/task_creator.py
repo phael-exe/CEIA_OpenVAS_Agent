@@ -1,18 +1,30 @@
 import functools
+import re
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import tool
 
 from ..tools.gvm_workflow import GVMWorkflow
 from ..state import AgentState  # Import AgentState
+
 @tool
 def create_openvas_task(question: str) -> str:
-    """Cria e inicia uma nova tarefa de scan de vulnerabilidade no OpenVAS."""
+    """Cria e inicia uma nova tarefa de scan de vulnerabilidade no OpenVAS para um IP específico."""
     print("\n--- EXECUTING THE TOOL: create_openvas_task ---")
+    
+    # Extrai o IP da pergunta usando regex
+    ip_pattern = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
+    match = re.search(ip_pattern, question)
+    
+    if not match:
+        return "Error: No IP address found in the question. Please specify an IP address (e.g., 'create task for 192.168.1.1')."
+        
+    target_host = match.group(0)
+    task_name = f"Automated Scan for {target_host}"
+
     try:
         workflow = GVMWorkflow()
-        result = workflow.run()
-        # Garante que sempre retornemos uma string para o LLM
-        return f"\nTool 'create_openvas_task' executed successfully. Result: {str(result)}"
+        result = workflow.run(task_name, target_host)
+        return f"\nTool 'create_openvas_task' executed successfully. {result}"
     except Exception as e:
         return f"\nError executing tool 'create_openvas_task': {e}"
 
