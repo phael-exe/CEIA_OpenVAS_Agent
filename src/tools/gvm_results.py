@@ -21,7 +21,7 @@ class ResultManager:
     def __init__(self):
         pass
         
-    def result(self):
+    def result(self, task_name_input):
         with GMP(connection=connection, transform=transform) as gmp:
             try:
                 gmp.authenticate(username=username, password=password)
@@ -29,7 +29,7 @@ class ResultManager:
 
                 task_id = None
                 task_status = None
-                task_name_input = input('\nType a word or the task name: ').strip().lower()
+                task_name_input = task_name_input.strip().lower()
         
                 # Buscar a tarefa pelo nome exato
                 for task in tasks.findall('task'):

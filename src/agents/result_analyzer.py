@@ -21,12 +21,24 @@ def get_response_from_openai(message: list[BaseMessage]):
 @tool
 def get_openvas_results(question: str) -> str:
     """Busca e analisa os resultados de um scan de vulnerabilidade do OpenVAS."""
-    print("\n--- EXECUTING TOOL: get_openvas_results ---")
     try:
+        # Extrai o nome da tarefa da pergunta usando regex
+        task_name_pattern = r"""(?:for task|task named|task called)\s+["']([^'"]+)[""]"""
+        task_name_match = re.search(task_name_pattern, question, re.IGNORECASE)
+        
+        if not task_name_match:
+            return "Error: No task name found in the question. Please specify a task name (e.g., 'analyze results for task named \"My Scan\"')."
+            
+        task_name = task_name_match.group(1)
+
         result_manager = ResultManager()
-        context = result_manager.result()
+        context = result_manager.result(task_name)
+        
+        if context is None:
+            return f"Could not retrieve results for task '{task_name}'. Please check the task name and its status."
+
         messages = [
-            SystemMessage(content="""You are a cybersecurity assistant specializing in network scanning and penetration testing. With expert knowledge of OpenVAS, a powerful vulnerability scanning tool, your role is to interpret everything that comes within the context and provide the user with insights on how to resolve each vulnerability.  
+            SystemMessage(content="""You are a cybersecurity assistant specializing in network scanning and penetration testing. With expert knowledge of OpenVAS, a powerful vulnerability scanning tool, your role is to interpret everything that comes within the context and provide the user with insights on how to resolve each vulnerability. If the user asks for 'worst vulnerabilities' or similar, prioritize and highlight vulnerabilities with Critical, High, or Medium CVSS Base Scores.
                       
                       When responding, follow this template and replace the placeholders with the appropriate values:
 

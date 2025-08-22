@@ -44,6 +44,7 @@ workflow.add_conditional_edges(
         "TaskCreator": "TaskCreator",
         "ResultAnalyzer": "ResultAnalyzer",
         "FINISH": END,
+        "supervisor": "supervisor",
     },
 )
 
@@ -65,11 +66,11 @@ if __name__ == "__main__":
             initial_state = {"messages": [HumanMessage(content=query)]}
 
             try:
-                print("\n--- Start ---")
+                print("Processing...")
                 final_state = graph.invoke(initial_state, {"recursion_limit": 5})
-                print("\n--- End ---")
                 final_message = final_state['messages'][-1]
                 print(f"\nResult: {final_message.content}")
+                print("\nDo you need anything else?")
 
             except Exception as e:
                 import traceback

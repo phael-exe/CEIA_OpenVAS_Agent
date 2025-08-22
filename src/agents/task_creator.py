@@ -9,7 +9,6 @@ from ..state import AgentState  # Import AgentState
 @tool
 def create_openvas_task(question: str) -> str:
     """Cria e inicia uma nova tarefa de scan de vulnerabilidade no OpenVAS para um IP específico."""
-    print("\n--- EXECUTING THE TOOL: create_openvas_task ---")
     
     # Extrai o IP da pergunta usando regex
     target_pattern = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:-[0-9]{1,3})?\b|\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}\b'
