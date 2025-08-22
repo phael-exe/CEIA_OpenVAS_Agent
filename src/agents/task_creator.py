@@ -12,14 +12,22 @@ def create_openvas_task(question: str) -> str:
     print("\n--- EXECUTING THE TOOL: create_openvas_task ---")
     
     # Extrai o IP da pergunta usando regex
-    ip_pattern = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
-    match = re.search(ip_pattern, question)
+    target_pattern = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:-[0-9]{1,3})?\b|\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}\b'
+    match = re.search(target_pattern, question)
     
     if not match:
-        return "Error: No IP address found in the question. Please specify an IP address (e.g., 'create task for 192.168.1.1')."
+        return "Error: No IP address, IP range, or hostname found in the question. Please specify a target (e.g., 'create task for 192.168.1.1', 'create task for 192.168.1.1-255', or 'create task for example.com')."
         
     target_host = match.group(0)
-    task_name = f"Automated Scan for {target_host}"
+
+    # Extrai o nome da tarefa da pergunta usando regex
+    task_name_pattern = r"""(?:called|name)\s+["']([^'"]+)[""]"""
+    task_name_match = re.search(task_name_pattern, question, re.IGNORECASE)
+    
+    if task_name_match:
+        task_name = task_name_match.group(1)
+    else:
+        task_name = f"Automated Scan for {target_host}"
 
     try:
         workflow = GVMWorkflow()
