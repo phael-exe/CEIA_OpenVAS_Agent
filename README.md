@@ -11,6 +11,9 @@ Welcome to the OpenVAS Agent project! This tool leverages the power of AI to rev
 *   **Actionable Remediation:** Receive best-practice remediation suggestions tailored to your specific environment.
 *   **User-Friendly Interface:** Interact with OpenVAS through a simple, conversational interface.
 *   **Customizable Workflows:** Adapt the agent to your unique security needs and scenarios.
+*   **📊 CSV Analysis Module:** Analyze OpenVAS CSV reports with AI-powered insights and generate executive summaries.
+*   **🌐 Streamlit Web Interface:** Interactive web dashboard for CSV analysis with charts and visualizations.
+*   **🆓 Opensource LLM Support:** Use free models via Groq (Llama, Mixtral, Gemma) when you're out of OpenAI credits.
 
 ## 🔧 Getting Started
 
@@ -64,6 +67,25 @@ Launch the OpenVAS Agent with the following command:
 python3 main.py
 ```
 
+### Running CSV Analysis
+
+For detailed instructions on the CSV Analysis module, see [CSV_ANALYZER.md](docs/CSV_ANALYZER.md).
+
+**Quick Start:**
+
+1. **Via Streamlit Interface (Recommended):**
+   ```bash
+   streamlit run streamlit_app.py
+   ```
+   Access at `http://localhost:8501`
+
+2. **Via Command Line:**
+   ```bash
+   # Place your CSV files in csv_reports/
+   python src/tools/csv_analyzer.py
+   ```
+   Results will be saved in `csv_analysis_results/`
+
 ## 📂 Project Structure
 
 ```
@@ -72,9 +94,16 @@ python3 main.py
 ├── ENV.md
 ├── LICENSE
 ├── main.py
+├── streamlit_app.py          # Streamlit web interface for CSV analysis
 ├── openvasagent.png
 ├── README.md
 ├── requirements.txt
+├── csv_reports/              # Place your OpenVAS CSV files here
+├── csv_analysis_results/     # Generated reports are saved here
+├── docs/
+│   ├── CSV_ANALYZER.md       # CSV Analysis documentation
+│   ├── diagram.html
+│   └── Docs.md
 └── src/
     ├── agents/
     │   ├── __init__.py
@@ -87,6 +116,7 @@ python3 main.py
     ├── state.py
     └── tools/
         ├── __init__.py
+        ├── csv_analyzer.py   # CSV analysis module
         ├── gvm_results.py
         └── gvm_workflow.py
 ```

@@ -1,5 +1,6 @@
 langchain-openai
 langchain-community
+langchain-groq
 gvm-tools
 langsmith
 langgraph
@@ -20,3 +21,5 @@ pypdf
 sentence-transformers
 pyfiglet
 colorama
+streamlit
+plotly
