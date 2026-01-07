@@ -1,0 +1,16 @@
+IP,Port,Protocol,Severity,NVT Name,Summary,CVE,CVSS
+192.168.1.10,443,tcp,High,SSL/TLS: Report Weak Cipher Suites,The remote service supports weak SSL/TLS cipher suites.,CVE-2016-2183,7.5
+192.168.1.10,22,tcp,Medium,SSH Weak Encryption Algorithms Supported,The remote SSH server is configured to allow weak encryption algorithms.,,5.3
+192.168.1.10,80,tcp,Low,TCP timestamps,The remote host implements TCP timestamps.,,2.6
+192.168.1.20,80,tcp,Critical,Apache HTTP Server Multiple Vulnerabilities,The remote Apache HTTP Server is affected by multiple vulnerabilities.,CVE-2021-44790,9.8
+192.168.1.20,3306,tcp,High,MySQL Unspecified vulnerability,The remote MySQL server is affected by an unspecified vulnerability.,CVE-2020-14765,7.1
+192.168.1.20,22,tcp,Medium,SSH Weak MAC Algorithms Enabled,The remote SSH server is configured to allow weak MAC algorithms.,,5.3
+192.168.1.30,21,tcp,Critical,FTP Unencrypted Cleartext Login,The remote FTP service transmits credentials in cleartext.,,9.8
+192.168.1.30,23,tcp,High,Telnet Server Detection,A Telnet service is running on this port.,,7.5
+192.168.1.30,80,tcp,Medium,Web Application Potentially Vulnerable to Clickjacking,The web application does not set an X-Frame-Options header.,,4.3
+192.168.1.40,445,tcp,Critical,Microsoft Windows SMB Server Multiple Vulnerabilities,The remote Windows host is affected by multiple vulnerabilities.,CVE-2020-0796,10.0
+192.168.1.40,3389,tcp,High,Terminal Services Encryption Level is not FIPS-140 Compliant,The remote Terminal Services encryption level is not FIPS-140 compliant.,,7.5
+192.168.1.40,135,tcp,Medium,DCE Services Enumeration Reporting,It was possible to enumerate DCE services.,,5.0
+192.168.1.50,8080,tcp,High,Apache Tomcat Multiple Vulnerabilities,The remote Apache Tomcat is affected by multiple vulnerabilities.,CVE-2021-42340,8.1
+192.168.1.50,22,tcp,Low,SSH Algos and Compression Algorithms Supported,This plugin lists all the SSH algorithms and compression methods.,,0.0
+192.168.1.60,443,tcp,Critical,OpenSSL Multiple Vulnerabilities,The remote service is affected by multiple OpenSSL vulnerabilities.,CVE-2022-0778,9.1

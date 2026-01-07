@@ -1,0 +1,58 @@
+================================================================================
+RELATÓRIO DE ANÁLISE DE VULNERABILIDADES - OPENVAS
+================================================================================
+
+📊 **RESUMO EXECUTIVO**: O relatório OpenVAS identificou 15 vulnerabilidades em 6 hosts únicos, com 5 vulnerabilidades críticas e 4 de alta severidade. É fundamental abordar essas questões para garantir a segurança da infraestrutura. A análise destaca a necessidade de atualizações e configurações de segurança em vários serviços e sistemas.
+
+🎯 **PRINCIPAIS DESCOBERTAS**: As principais descobertas incluem a presença de vulnerabilidades críticas e de alta severidade, como suítes de cifras fracas em SSL/TLS e algoritmos de criptografia fracos no SSH. Além disso, a detecção de servidores FTP e Telnet sem criptografia e a presença de vulnerabilidades em servidores Apache e MySQL são pontos críticos que precisam de atenção imediata.
+
+📈 **ANÁLISE DE RISCO**: A distribuição das vulnerabilidades mostra que 9 delas são de alta ou crítica severidade, o que pode ter um impacto significativo na segurança da infraestrutura. A presença de múltiplas vulnerabilidades em cada host afetado aumenta o risco de exploração por atacantes. É importante notar que 4 hosts estão com 3 vulnerabilidades cada, o que os torna alvos potenciais para ataques.
+
+🔥 **TOP PRIORIDADES**:
+1. **Atualizar SSL/TLS para suítes de cifras fortes**: Remover suítes de cifras fracas para evitar ataques de interceptação.
+2. **Desabilitar algoritmos de criptografia fracos no SSH**: Garantir que apenas algoritmos de criptografia fortes sejam usados para proteger as sessões SSH.
+3. **Configurar criptografia para FTP e Telnet**: Implementar criptografia para proteger as comunicações de login e dados.
+4. **Atualizar o Apache HTTP Server**: Corrigir vulnerabilidades conhecidas no servidor web para prevenir ataques.
+5. **Remediar vulnerabilidades no MySQL**: Aplicar patches para corrigir vulnerabilidades no banco de dados e evitar acessos não autorizados.
+
+💡 **RECOMENDAÇÕES**: 
+- **Agendar atualizações regulares**: Manter todos os sistemas e serviços atualizados com os últimos patches de segurança.
+- **Realizar auditorias de segurança frequentes**: Utilizar ferramentas como o OpenVAS para identificar e remediar vulnerabilidades antes que se tornem problemas.
+- **Implementar políticas de segurança**: Desenvolver e aplicar políticas de segurança para garantir que todos os serviços e sistemas sejam configurados e mantidos de forma segura.
+- **Treinamento e conscientização**: Oferecer treinamento regular para equipes de TI sobre melhores práticas de segurança e como lidar com vulnerabilidades.
+- **Monitoramento contínuo**: Estabelecer um processo de monitoramento contínuo para detectar e responder a incidentes de segurança de forma eficaz.
+
+================================================================================
+ESTATÍSTICAS DETALHADAS
+================================================================================
+
+{
+  "total_vulnerabilities": 15,
+  "unique_hosts": 6,
+  "by_severity": {
+    "High": 5,
+    "Medium": 4,
+    "Critical": 4,
+    "Low": 2
+  },
+  "top_vulnerabilities": {
+    "SSL/TLS: Report Weak Cipher Suites": 1,
+    "SSH Weak Encryption Algorithms Supported": 1,
+    "TCP timestamps": 1,
+    "Apache HTTP Server Multiple Vulnerabilities": 1,
+    "MySQL Unspecified vulnerability": 1,
+    "SSH Weak MAC Algorithms Enabled": 1,
+    "FTP Unencrypted Cleartext Login": 1,
+    "Telnet Server Detection": 1,
+    "Web Application Potentially Vulnerable to Clickjacking": 1,
+    "Microsoft Windows SMB Server Multiple Vulnerabilities": 1
+  },
+  "most_affected_hosts": {
+    "192.168.1.10": 3,
+    "192.168.1.20": 3,
+    "192.168.1.30": 3,
+    "192.168.1.40": 3,
+    "192.168.1.50": 2,
+    "192.168.1.60": 1
+  }
+}
