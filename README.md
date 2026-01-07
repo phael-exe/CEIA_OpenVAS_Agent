@@ -67,6 +67,13 @@ Launch the OpenVAS Agent with the following command:
 python3 main.py
 ```
 
+**New CSV Analysis Commands:**
+- "Analise os CSVs" - Analyze all CSV files in csv_reports/
+- "Lista os CSVs" - List available CSV files
+- "Analise o arquivo X.csv" - Analyze specific CSV file
+
+The agent now integrates CSV analysis capabilities! Just place your OpenVAS CSV reports in `csv_reports/` and ask the agent to analyze them.
+
 ### Running CSV Analysis
 
 For detailed instructions on the CSV Analysis module, see [CSV_ANALYZER.md](docs/CSV_ANALYZER.md).

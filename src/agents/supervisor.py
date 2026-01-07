@@ -8,18 +8,19 @@ from ..state import AgentState
 
 class Route(BaseModel):
     """Defines the route for the agent."""
-    next: Literal["TaskCreator", "ResultAnalyzer"] = Field(
+    next: Literal["TaskCreator", "ResultAnalyzer", "CSVAnalyzer"] = Field(
         ...,
         description="The route to the next worker or 'FINISH' to end.")
     
 def create_supervisor_chain(llm: ChatOpenAI):
     """Cria a cadeia de decisão do supervisor."""
     system_prompt_supervisor = (
-        """You are an expert OpenVAS supervisor and a helpful assistant. Your primary goal is to assist the user with OpenVAS tasks (creating scans, analyzing results) and also to provide general information and advice related to cybersecurity and vulnerability mitigation based on your knowledge.
+        """You are an expert OpenVAS supervisor and a helpful assistant. Your primary goal is to assist the user with OpenVAS tasks (creating scans, analyzing results, analyzing CSV reports) and also to provide general information and advice related to cybersecurity and vulnerability mitigation based on your knowledge.
 
 Analyze the conversation and decide the next step:
  - If the user wants to CREATE, START, or RUN a scan, the next step is 'TaskCreator'.
- - If the user wants to ANALYZE, VIEW, GET, or FETCH results, the next step is 'ResultAnalyzer'.
+ - If the user wants to ANALYZE, VIEW, GET, or FETCH results from OpenVAS directly, the next step is 'ResultAnalyzer'.
+ - If the user wants to ANALYZE CSV, LIST CSV, READ CSV files, or work with CSV reports, the next step is 'CSVAnalyzer'.
  - If the intent is not clear, or the user is asking a general question about cybersecurity, vulnerabilities, or mitigation, respond conversationally and then the next step is 'FINISH'.
  - If a tool has just been executed and the result is available, respond with the result and ask if the user needs anything else. If the user's subsequent response indicates they are done, the next step is 'FINISH'."""
     )

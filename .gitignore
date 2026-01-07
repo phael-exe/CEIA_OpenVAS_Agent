@@ -174,3 +174,10 @@ cython_debug/
 .idea/vcs.xml
 .idea/openvas_agent.iml
 .idea/inspectionProfiles/profiles_settings.xml
+
+# CSV Reports and Analysis Results
+csv_reports/*.csv
+!csv_reports/README.md
+csv_analysis_results/*.txt
+!csv_analysis_results/README.md
+temp_csv/
