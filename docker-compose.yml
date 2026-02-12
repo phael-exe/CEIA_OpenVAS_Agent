@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  openvas-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: openvas-agent
+    
+    # Port configuration
+    ports:
+      - "8501:8501"  # Streamlit web interface
+      - "8000:8000"  # API (if enabled)
+    
+    # Volume mounts
+    volumes:
+      - ./csv_reports:/app/csv_reports:rw
+      - ./csv_analysis_results:/app/csv_analysis_results:rw
+      - ./docs:/app/docs:ro
+      - ./src:/app/src:ro
+      - ${GVM_SOCKET_PATH:-/run/gvmd/gvmd.sock}:/run/gvmd/gvmd.sock:rw
+    
+    # Environment variables
+    environment:
+      # LLM Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL_ID=${OPENAI_MODEL_ID:-gpt-4o-mini}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_MODEL_ID=${GROQ_MODEL_ID:-llama-3.3-70b-versatile}
+      
+      # GVM Configuration
+      - GVM_HOST=${GVM_HOST:-localhost}
+      - GVM_PORT=${GVM_PORT:-9392}
+      - GVM_USERNAME=${GVM_USERNAME}
+      - GVM_PASSWORD=${GVM_PASSWORD}
+      - GVM_SOCKET_PATH=${GVM_SOCKET_PATH:-/run/gvmd/gvmd.sock}
+      - GVM_TLS=${GVM_TLS:-true}
+      - GVM_TLS_CERT_PATH=${GVM_TLS_CERT_PATH}
+      
+      # Python Configuration
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Network configuration
+    networks:
+      - openvas-network
+
+  # Optional: Add a volume for persistent data
+  # data-volume:
+  #   driver: local
+
+networks:
+  openvas-network:
+    driver: bridge
+
+# Volumes configuration (if needed for persistent storage)
+volumes:
+  csv_reports:
+    driver: local
+  csv_analysis_results:
+    driver: local
