@@ -1,8 +1,9 @@
+
 # OpenVAS Agent: Seu Assistente de IA para Análise de Vulnerabilidades
 
-[![Licença](https://img.shields.io/badge/Licença-MIT-blue)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.8+-blue)](https://www.python.org/)
-[![Docker](https://img.shields.io/badge/Docker-Suportado-blue)](https://www.docker.com/)
+![Licença](https://img.shields.io/badge/Licença-MIT-blue)
+![Python](https://img.shields.io/badge/Python-3.8+-blue)
+![Docker](https://img.shields.io/badge/Docker-Suportado-blue)
 
 Bem-vindo ao projeto OpenVAS Agent! Esta ferramenta aproveita o poder da IA para revolucionar como você interage com o scanner de vulnerabilidades OpenVAS. Nosso objetivo é criar um copiloto poderoso e intuitivo que o assista na análise de vulnerabilidades, interpretação de resultados e otimização do seu fluxo de trabalho de segurança.
 
@@ -70,6 +71,32 @@ Bem-vindo ao projeto OpenVAS Agent! Esta ferramenta aproveita o poder da IA para
 - **Comunicação de API:** gvm-tools, httpx
 - **Containerização:** Docker & Docker Compose
 
+
+## 🏗️ Instalação do OpenVAS
+
+Antes de usar o agente, é necessário ter o OpenVAS/GVM instalado e funcionando no seu sistema.
+
+### Ubuntu 24.04
+
+Siga o guia detalhado para instalar o Greenbone OpenVAS no Ubuntu 24.04:
+
+- [Guia de Instalação OpenVAS no Ubuntu 24.04 (dev.iachieved.it)](https://dev.iachieved.it/iachievedit/installing-greenbone-openvas-on-ubuntu-24-04/)
+
+### Kali Linux
+
+No Kali, o OpenVAS (Greenbone) pode ser instalado diretamente pelos repositórios:
+
+```bash
+sudo apt update
+sudo apt install openvas
+sudo gvm-setup
+sudo gvm-check-setup
+```
+
+Após a instalação, siga as instruções do terminal para finalizar a configuração e obter a senha de acesso.
+
+---
+
 ## 🔧 Começando
 
 ### Pré-requisitos
@@ -79,7 +106,8 @@ Bem-vindo ao projeto OpenVAS Agent! Esta ferramenta aproveita o poder da IA para
 *   Acesso à API do GVM.
 *   (Opcional) Docker & Docker Compose para implantação containerizada
 
-### Instalação
+
+### Instalação do Agente
 
 #### Opção 1: Docker (Recomendado) ✨
 
@@ -151,7 +179,8 @@ O agente agora integra recursos de análise CSV! Basta colocar seus relatórios 
 
 ### Executando Análise CSV
 
-Para instruções detalhadas sobre o módulo de Análise CSV, veja [CSV_ANALYZER.md](docs/CSV_ANALYZER.md).
+
+Para instruções detalhadas sobre o módulo de Análise CSV, veja o arquivo `docs/CSV_ANALYZER.md`.
 
 **Início Rápido:**
 
@@ -244,10 +273,12 @@ Bem-vindo contribuições da comunidade! Se quiser se envolver, sinta-se livre p
 *   Enviar pull requests
 *   Melhorar a documentação
 
+
 ## 📜 Licença
 
-Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a Licença MIT. Veja o arquivo LICENSE para mais detalhes.
+
 
 ## 📧 Contato
 
-Tem dúvidas ou feedback? Sinta-se livre para entrar em contato conosco em [rapha555lima@gmail.com](mailto:rapha555lima@gmail.com).
+Tem dúvidas ou feedback? Sinta-se livre para entrar em contato conosco pelo e-mail: rapha555lima@gmail.com
